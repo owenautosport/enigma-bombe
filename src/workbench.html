@@ -1,0 +1,1601 @@
+<title>Hut 6 Workbench</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#0F1311; --panel:#171D1A; --panel2:#1E2622; --line:#2E3833; --ink:#E4E8E3; --muted:#9AA59E;
+  --amber:#F2A93B; --amber-soft:rgba(242,169,59,.16); --brass:#C09A5B; --red:#E3735D; --red-soft:rgba(227,115,93,.16); --green:#6CC293; --green-soft:rgba(108,194,147,.14);
+  --enamel:#0A0C0B; --wood:#5B3E26; --wood2:#442D1B; --paper:#E9E8DF; --paper-ink:#1D2320; --paper-line:#C9C7B8;
+  --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --body:"Source Serif 4",Georgia,serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{background:var(--bg)}
+body{color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;padding-inline:16px;padding-block:0 60px}
+.wrap{max-width:1180px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);font-weight:900;line-height:1;margin:0;text-wrap:balance;text-transform:uppercase;letter-spacing:.02em}
+h2{font-size:clamp(1.9rem,4vw,2.6rem)}
+h3{font-size:1.15rem;font-weight:700;letter-spacing:.06em}
+p{margin:0}
+.mono{font-family:var(--mono)}
+.muted{color:var(--muted)}
+.small{font-size:.85rem}
+button,select,input{font:inherit}
+button{font-family:var(--mono);font-size:.82rem;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:8px 12px;cursor:pointer}
+button:hover{border-color:var(--muted)}
+button.primary{background:var(--amber);color:#1A1407;border-color:var(--amber);font-weight:600}
+button.primary:hover{filter:brightness(1.07)}
+button:disabled{opacity:.45;cursor:not-allowed}
+select,input[type=text],input[type=number],textarea{background:var(--enamel);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:7px 9px;font-family:var(--mono);font-size:.85rem}
+textarea{width:100%;resize:vertical;min-height:70px}
+:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+label{font-family:var(--mono);font-size:.78rem;color:var(--muted);letter-spacing:.04em}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.stack{display:flex;flex-direction:column;gap:14px}
+.eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+
+/* header + tabs */
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:1px solid var(--line);padding-block:14px 0;display:flex;flex-direction:column;gap:12px}
+.brand{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.brand h1{font-size:clamp(1.7rem,4vw,2.3rem)}
+.brand h1 span{color:var(--amber)}
+nav.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+nav.tabs button{background:transparent;border:0;border-bottom:3px solid transparent;border-radius:0;padding:8px 12px 10px;color:var(--muted);white-space:nowrap;font-size:.85rem}
+nav.tabs button b{font-family:var(--display);font-size:1.1rem;color:var(--amber);margin-right:6px}
+nav.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--amber)}
+main{padding-top:24px}
+.tab{display:flex;flex-direction:column;gap:22px}
+.intro{max-width:72ch;color:var(--ink)}
+.intro p+p{margin-top:8px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.grid-2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:900px){.grid-2{grid-template-columns:1fr}}
+.note{border-left:3px solid var(--amber);background:var(--amber-soft);padding:10px 14px;font-size:.92rem;max-width:80ch}
+.note.bad{border-color:var(--red);background:var(--red-soft)}
+.note.good{border-color:var(--green);background:var(--green-soft)}
+
+/* ===== ENIGMA ===== */
+.enigma-box{background:linear-gradient(180deg,var(--wood),var(--wood2));border-radius:12px;padding:14px;box-shadow:inset 0 0 0 2px #2B1C10,0 10px 30px rgba(0,0,0,.4)}
+.enigma{--k:clamp(28px,8vw,46px);background:repeating-radial-gradient(circle at 30% 20%,#141715 0 1px,#0B0D0C 1px 3px);border-radius:8px;padding:16px 12px 18px;display:flex;flex-direction:column;align-items:center;gap:16px;position:relative}
+.plate{font-family:var(--display);font-weight:700;letter-spacing:.3em;color:var(--brass);font-size:.85rem}
+.rotorbay{display:flex;gap:clamp(10px,3vw,26px);justify-content:center;align-items:flex-end;background:#060707;border:1px solid #232926;border-radius:8px;padding:12px 16px}
+.rslot{display:flex;flex-direction:column;align-items:center;gap:4px}
+.rslot .rname{font-family:var(--mono);font-size:.68rem;color:var(--brass);letter-spacing:.08em}
+.rslot .thumb{width:22px;height:18px;border-radius:3px;border:0;padding:0;background:repeating-linear-gradient(180deg,#8B8F8A 0 2px,#4C504D 2px 4px);cursor:pointer}
+.rslot .thumb:hover{filter:brightness(1.2)}
+.rwin{width:calc(var(--k)*.82);height:calc(var(--k)*.82);border-radius:6px;background:#EDE9DC;color:#111;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:600;font-size:calc(var(--k)*.42);box-shadow:inset 0 3px 6px rgba(0,0,0,.55);user-select:none;cursor:ns-resize}
+.rslot.greek .rwin{background:#D8D2BF}
+.lampboard,.keyboard{display:flex;flex-direction:column;align-items:center;gap:calc(var(--k)*.18)}
+.krow{display:flex;gap:calc(var(--k)*.2)}
+.lamp{width:var(--k);height:var(--k);border-radius:50%;background:radial-gradient(circle at 50% 40%,#2A2D2A,#161816);border:2px solid #2C302D;color:#5E655F;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:600;font-size:calc(var(--k)*.4);transition:background .05s,color .05s}
+.lamp.on{background:radial-gradient(circle at 50% 45%,#FFF1C4,#F6B94A 55%,#B8741A);color:#3A2408;border-color:#F2A93B;box-shadow:0 0 18px rgba(242,169,59,.7)}
+.key{width:var(--k);height:var(--k);border-radius:50%;background:radial-gradient(circle at 50% 35%,#2B2F2C,#111312);border:3px solid #9A9E99;color:#F1F3EF;font-family:var(--mono);font-weight:600;font-size:calc(var(--k)*.4);padding:0;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 0 #050606;touch-action:manipulation;user-select:none}
+.key:active,.key.down{transform:translateY(3px);box-shadow:0 1px 0 #050606}
+.plugboard{position:relative;background:#070808;border:1px solid #232926;border-radius:8px;padding:14px 10px 10px;display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;max-width:640px}
+.plugboard .plate{font-size:.7rem}
+.socket{width:var(--k);display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;background:none;border:0;padding:0;z-index:2;position:relative}
+.socket span{font-family:var(--mono);font-size:.68rem;color:#9AA59E}
+.socket i{display:flex;gap:5px}
+.socket i::before,.socket i::after{content:"";width:9px;height:9px;border-radius:50%;background:#000;border:2px solid #6F746F}
+.socket.sel i::before,.socket.sel i::after{border-color:var(--amber);background:var(--amber)}
+.socket.used span{color:var(--ink);font-weight:600}
+#cables{position:absolute;inset:0;pointer-events:none;z-index:3;overflow:visible}
+.lid-note{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+
+.side h3{color:var(--brass)}
+.setgrid{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;align-items:center}
+.setgrid .row{gap:6px}
+.tape{font-family:var(--mono);font-size:.95rem;background:var(--enamel);border:1px solid var(--line);border-radius:4px;padding:10px;min-height:44px;word-spacing:.5em;overflow-wrap:anywhere;line-height:1.7}
+.tape.out{color:var(--amber)}
+.trace{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-family:var(--mono);font-size:.78rem}
+.trace span{padding:3px 6px;border-radius:3px;background:var(--panel2);border:1px solid var(--line)}
+.trace span b{color:var(--amber);font-weight:600}
+.trace span.rev b{color:#8FC3E0}
+.trace em{color:var(--muted);font-style:normal}
+
+/* ===== GUIDED TOUR ===== */
+.brand-right{margin-left:auto;display:flex;gap:6px;align-items:center}
+.linkish{background:none;border:0;color:var(--muted);text-decoration:underline;padding:4px}
+.tour-banner{margin-bottom:18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:var(--amber-soft);border:1px solid var(--amber);border-radius:8px;padding:10px 14px;font-size:.95rem}
+.tour-ring{position:fixed;z-index:60;border:2px solid var(--amber);border-radius:10px;box-shadow:0 0 0 9999px rgba(5,7,6,.55);pointer-events:none;transition:all .15s}
+.tour-card{position:fixed;z-index:61;width:min(380px,calc(100vw - 32px));background:var(--panel);border:1px solid var(--amber);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;box-shadow:0 12px 32px rgba(0,0,0,.5)}
+.tour-card.dock{left:16px!important;right:16px;width:auto;top:auto!important;bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+.tour-card h3{color:var(--amber);font-size:1.25rem}
+.tour-card p{font-size:.95rem}
+.tour-head{display:flex;justify-content:space-between;align-items:center}
+.tour-x{padding:2px 8px;background:none;border:0;color:var(--muted);font-size:1rem}
+.tour-btns{justify-content:flex-end}
+.tour-done{font-family:var(--mono);font-size:.8rem;color:var(--green);margin-right:auto}
+@media (prefers-reduced-motion:reduce){.tour-ring{transition:none}}
+
+/* ===== 3D STAGES ===== */
+.stage-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:var(--panel)}
+.seg button[aria-pressed=true]{background:var(--amber);color:#1A1407;font-weight:600}
+.cams{display:flex;flex-wrap:wrap;gap:6px}
+.cams button{padding:6px 10px;font-size:.78rem}
+.stage3d{position:relative;width:100%;height:clamp(360px,62vh,640px);border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#0F1311}
+.stage3d .hint{position:absolute;left:10px;bottom:8px;font-family:var(--mono);font-size:.7rem;color:#9AA59E;background:rgba(15,19,17,.7);padding:4px 8px;border-radius:4px;pointer-events:none}
+#b3d{height:clamp(340px,58vh,600px)}
+.stage-wrap{display:flex;flex-direction:column;gap:10px;min-width:0}
+
+/* ===== INTERCEPT FORMS ===== */
+.forms{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px}
+.form{background:var(--paper);color:var(--paper-ink);border-radius:4px;padding:18px 18px 16px;font-family:var(--mono);font-size:.85rem;display:flex;flex-direction:column;gap:10px;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.form .fhead{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid var(--paper-ink);padding-bottom:6px;gap:8px;flex-wrap:wrap}
+.form .fhead b{font-family:var(--display);font-size:1.3rem;letter-spacing:.06em}
+.form .kv{display:grid;grid-template-columns:110px 1fr;gap:2px 10px;font-size:.8rem}
+.form .kv span:nth-child(odd){color:#5B625D}
+.form .groups{word-spacing:.55em;line-height:1.8;font-size:.92rem;overflow-wrap:anywhere;border-top:1px dashed var(--paper-line);border-bottom:1px dashed var(--paper-line);padding-block:8px}
+.form .intel{font-family:var(--body);font-size:.92rem;background:#DCDBD0;padding:10px;border-radius:3px}
+.form .level{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;padding:2px 8px;border:1px solid currentColor;border-radius:999px}
+.form button{background:var(--paper-ink);color:var(--paper);border-color:var(--paper-ink)}
+.form button.ghost{background:transparent;color:var(--paper-ink)}
+.keysheet{background:#F3E9E4;border:2px solid #9B2B1E;color:#2A1A16;padding:10px;font-size:.8rem;border-radius:3px}
+.keysheet .stamp{color:#9B2B1E;font-family:var(--display);font-size:1.1rem;letter-spacing:.2em}
+.keysheet table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+.keysheet td,.keysheet th{border:1px solid #C9A9A1;padding:3px 5px;text-align:left;font-size:.75rem}
+
+/* ===== CRIB / MENU ===== */
+.ctape-wrap{overflow-x:auto;padding-bottom:6px}
+.ctape{display:grid;gap:2px;width:max-content}
+.c{font-family:var(--mono);font-size:14px;width:24px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:3px}
+.c.i{font-size:9px;color:var(--muted);height:14px}
+.c.ct{background:var(--panel2);color:var(--ink)}
+.c.cr{background:var(--amber-soft);border:1px solid var(--amber);color:var(--ink)}
+.c.cr.off{opacity:.35;border-style:dashed}
+.c.clash{background:var(--red);border-color:var(--red);color:#fff}
+.c.ctclash{background:var(--red);color:#fff}
+.verdict{font-family:var(--mono);font-size:.88rem;padding:8px 12px;border-radius:4px}
+.verdict.ok{background:var(--green-soft);color:var(--ink)}
+.verdict.no{background:var(--red-soft);color:var(--ink)}
+.toggles{display:flex;flex-wrap:wrap;gap:3px}
+.toggles button{width:30px;height:36px;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1;font-size:.85rem}
+.toggles button small{font-size:.58rem;color:var(--muted)}
+.toggles button.on{background:var(--amber-soft);border-color:var(--amber)}
+.menu-svg{background:var(--enamel);border:1px solid var(--line);border-radius:6px;overflow-x:auto}
+.menu-svg svg{display:block;width:100%;min-width:520px;height:auto}
+svg text{font-family:var(--mono)}
+.stats{display:flex;flex-wrap:wrap;gap:10px}
+.stat{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:8px 12px;display:flex;flex-direction:column;min-width:96px}
+.stat b{font-family:var(--display);font-size:1.6rem;line-height:1}
+.stat span{font-family:var(--mono);font-size:.68rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+
+/* ===== BOMBE ===== */
+.bombe-face{background:#0A0C0B;border:1px solid var(--line);border-radius:8px;padding:12px;overflow-x:auto}
+.bombe-face svg{display:block;min-width:720px;width:100%;height:auto}
+.register{display:grid;grid-template-columns:repeat(13,minmax(0,1fr));gap:4px}
+.reg{font-family:var(--mono);font-size:.7rem;text-align:center;padding:14px 0 3px;border-radius:3px;border:1px solid var(--line);color:var(--muted);position:relative}
+.reg::before{content:"";position:absolute;left:50%;top:4px;width:7px;height:7px;margin-left:-3.5px;border-radius:50%;background:#2B322E}
+.reg.on{border-color:var(--amber);color:var(--ink);background:var(--amber-soft)}
+.reg.on::before{background:var(--amber);box-shadow:0 0 6px var(--amber)}
+.reg.cand{outline:2px solid var(--green);outline-offset:1px;color:var(--ink)}
+.indicator{display:flex;gap:6px;align-items:center}
+.indicator .rwin{--k:40px;cursor:default}
+.progress{height:8px;background:var(--panel2);border-radius:4px;overflow:hidden}
+.progress i{display:block;height:100%;width:0;background:var(--amber);transition:width .2s}
+.switch{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-family:var(--mono);font-size:.82rem;color:var(--ink)}
+.switch input{accent-color:var(--amber);width:18px;height:18px}
+.tablewrap{overflow-x:auto;max-height:420px;overflow-y:auto;border:1px solid var(--line);border-radius:6px}
+table.stops{border-collapse:collapse;width:100%;font-family:var(--mono);font-size:.8rem;font-variant-numeric:tabular-nums}
+table.stops th,table.stops td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+table.stops th{position:sticky;top:0;background:var(--panel2);color:var(--muted);font-weight:400;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase}
+table.stops tr{cursor:pointer}
+table.stops tr:hover td{background:var(--panel2)}
+table.stops tr.sel td{background:var(--amber-soft)}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:.7rem;border:1px solid currentColor}
+.pill.ok{color:var(--green)}
+.pill.no{color:var(--red)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.running .dr-fast{animation:spin .5s linear infinite;transform-box:fill-box;transform-origin:center}
+.running .dr-mid{animation:spin 6s linear infinite;transform-box:fill-box;transform-origin:center}
+@media (prefers-reduced-motion:reduce){.running .dr-fast,.running .dr-mid{animation:none}}
+
+/* ===== CHECKING ===== */
+.dec{display:flex;flex-wrap:wrap;gap:14px 16px;font-family:var(--mono)}
+.grp{display:flex;flex-direction:column;gap:2px}
+.grp .cl,.grp .pl{display:flex}
+.grp .cl span{width:17px;text-align:center;font-size:.72rem;color:var(--muted)}
+.grp .pl button{width:17px;padding:0;border:0;background:none;border-radius:2px;font-size:1.05rem;font-weight:600;color:var(--ink);font-family:var(--mono);line-height:1.4}
+.grp .pl button:hover{background:var(--panel2)}
+.grp .pl button.crib{color:var(--amber)}
+.grp .pl button.cribbad{color:var(--red);text-decoration:underline}
+.grp .pl button.sel{background:var(--amber);color:#1A1407}
+.ringfinder{display:flex;flex-direction:column;gap:4px;font-family:var(--mono);font-size:.78rem;max-height:360px;overflow-y:auto}
+.rf{display:grid;grid-template-columns:60px 76px 1fr auto;gap:8px;align-items:center;padding:4px 6px;border-radius:3px}
+.rf:nth-child(1){background:var(--amber-soft)}
+.rf .txt{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.banner{border:2px solid var(--green);background:var(--green-soft);border-radius:8px;padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+.banner h3{color:var(--green);font-size:1.5rem}
+.stepper{display:inline-flex;align-items:center;gap:4px}
+.stepper button{padding:4px 9px}
+.stepper output{font-family:var(--mono);min-width:34px;text-align:center;font-weight:600}
+.helper{background:var(--panel2);border:1px solid var(--amber);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.sugg{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-family:var(--mono);font-size:.82rem}
+footer{margin-top:40px;border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font-size:.85rem;display:flex;flex-direction:column;gap:6px;max-width:90ch}
+</style>
+
+<div class="wrap">
+<header class="top">
+  <div class="brand"><h1>Hut 6 <span>Workbench</span></h1><span class="eyebrow">Enigma · Crib · Menu · Bombe · Checking machine</span><span class="brand-right"><button id="tourBtn" class="primary">Guided tour</button><button id="tourRestart" class="linkish">start over</button></span></div>
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="enigma" aria-selected="true"><b>1</b>Enigma</button>
+    <button role="tab" data-tab="intercepts" aria-selected="false"><b>2</b>Intercepts</button>
+    <button role="tab" data-tab="menu" aria-selected="false"><b>3</b>Crib &amp; menu</button>
+    <button role="tab" data-tab="bombe" aria-selected="false"><b>4</b>Bombe</button>
+    <button role="tab" data-tab="check" aria-selected="false"><b>5</b>Checking machine</button>
+  </nav>
+</header>
+
+<main>
+  <div class="tour-banner" id="tourBanner" hidden><span><strong>New to Enigma?</strong> The guided tour walks you through breaking a German weather report, step by step. It takes about 10 minutes.</span><span class="row"><button class="primary" id="tourGo">Start the tour</button><button id="tourNo">No thanks</button></span></div>
+<!-- ================= 1 ENIGMA ================= -->
+<section class="tab" id="tab-enigma">
+  <div class="note" id="enigmaNote" hidden></div>
+  <div class="intro"><p>A working Enigma with every setting the real machines had. Type on the keys (or your own keyboard) and the lamp lights while the key is held. Open the lid on the right to change rotors, ring settings and reflector. Click two plugboard sockets to join them with a cable.</p></div>
+  <div class="grid-2">
+    <div class="stage-wrap">
+    <div class="stage-bar" id="eBar" hidden>
+      <div class="seg" role="group" aria-label="Machine view"><button data-ev="3d" aria-pressed="true">3D machine</button><button data-ev="flat" aria-pressed="false">Flat panel</button></div>
+      <div class="cams" id="eCams"><button data-cam="operator">Operator</button><button data-cam="rotors">Rotors</button><button data-cam="plugboard">Plugboard</button><button data-cam="top">Top</button><button id="eCover">Lift rotor cover</button></div>
+    </div>
+    <div class="stage3d" id="e3d" hidden><div class="hint">Drag to look around · click keys · drag or scroll the thumbwheels · click two sockets for a cable</div></div>
+    <div class="enigma-box" id="eFlat">
+      <div class="enigma" id="enigma">
+        <div class="plate" id="modelPlate">ENIGMA</div>
+        <div class="rotorbay" id="rotorbay"></div>
+        <div class="lampboard" id="lampboard"></div>
+        <div class="keyboard" id="keyboard"></div>
+        <div class="plugboard" id="plugboard"><div class="plate">STECKERBRETT</div><svg id="cables"></svg></div>
+      </div>
+    </div>
+    </div>
+    <div class="stack side">
+      <div class="panel">
+        <h3>Inside the lid</h3>
+        <div class="setgrid">
+          <label for="mModel">Machine</label>
+          <select id="mModel"><option value="I">Enigma I (Army &amp; Air Force)</option><option value="M3">Enigma M3 (Navy)</option><option value="M4">Enigma M4 (U-boats, 4 rotors)</option></select>
+          <label for="mRefl">Reflector</label><select id="mRefl"></select>
+          <label>Rotors</label><div class="row" id="mRotors"></div>
+          <label>Rings</label><div class="row" id="mRings"></div>
+          <label for="mRingStyle">Ring marks</label>
+          <select id="mRingStyle"><option value="L">Letters A–Z</option><option value="N">Numbers 01–26</option></select>
+        </div>
+        <p class="lid-note">Walzenlage (rotor order) is written left to right. The ring setting turns each rotor's wiring against its alphabet ring. The notch that turns the next rotor stays with the alphabet ring.</p>
+      </div>
+      <div class="panel">
+        <div class="row" style="justify-content:space-between"><h3>Plugboard</h3><span class="mono small muted" id="plugCount">0 cables</span></div>
+        <input type="text" id="plugText" placeholder="e.g. AV BS CG DL" aria-label="Plugboard pairs">
+        <div class="row"><button id="plugApply">Set pairs</button><button id="plugClear">Pull all cables</button></div>
+      </div>
+      <div class="panel">
+        <div class="row" style="justify-content:space-between"><h3>Operator's pad</h3><button id="tapeClear">Clear</button></div>
+        <label>Typed</label><div class="tape" id="tapeIn"></div>
+        <label>Lamps</label><div class="tape out" id="tapeOut"></div>
+        <label>Last key: path of the current</label><div class="trace" id="trace"><em>Press a key.</em></div>
+      </div>
+      <div class="panel">
+        <h3>Type a whole message</h3>
+        <textarea id="bulkText" placeholder="Wetter: Regen, 3 Grad. Wind aus Nordwest."></textarea>
+        <div class="row">
+          <label class="switch"><input type="checkbox" id="prepQ" checked> CH → Q</label>
+          <label class="switch"><input type="checkbox" id="prepX" checked> Spaces → X</label>
+        </div>
+        <div class="row"><button id="prepBtn">Prepare as a German operator</button><button class="primary" id="bulkRun">Type it on the machine</button></div>
+        <p class="small muted">German procedure: umlauts written out (Ä→AE), ß→SS, numbers spelled (2 = ZWO), X between words and for a full stop, CH often sent as Q.</p>
+        <button id="makeChallenge">Send this message to the Bombe as a challenge</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 2 INTERCEPTS ================= -->
+<section class="tab" id="tab-intercepts" hidden>
+  <div class="intro">
+    <p>These are radio intercepts as a Y-station operator would have logged them, with the header, the first group (the <em>Kenngruppe</em>, which says which key list is in use), then the cipher text in groups of five. Each one comes with what Hut 6 already knew about that station, which is where the crib comes from.</p>
+    <p class="small muted">The first three are reconstructions, written in period style and encrypted on this page's Enigma using the German procedure of 1940–41. The last two are genuine wartime messages. Key sheets stay hidden until you ask for them.</p>
+  </div>
+  <div class="forms" id="forms"></div>
+  <div class="panel">
+    <h3>How the procedure worked (1940 onward)</h3>
+    <ol class="small" style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px">
+      <li>Every unit on a network set up the same <strong>daily key</strong> at midnight from a printed key sheet: rotor order, ring settings, plugboard.</li>
+      <li>For each message the operator picked a random <strong>Grundstellung</strong> (say HRB), set the rotor windows to it and typed a random <strong>message key</strong> (say NDH). The lamps gave the encrypted key (say UYE).</li>
+      <li>He then set the windows to NDH and typed the message. The header sent "HRB UYE" in the clear.</li>
+      <li>The receiver set HRB, typed UYE, read NDH off the lamps, set NDH and decrypted.</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ================= 3 CRIB & MENU ================= -->
+<section class="tab" id="tab-menu" hidden>
+  <div class="intro"><p>Pick a message and a crib, slide the crib into a position where no letter sits on itself, then choose which crib letters go into the menu. The Bombe assumes only the fast rotor moves during the menu, so keep it short enough to avoid the middle rotor stepping. Bletchley's menus were usually 12–16 letters.</p></div>
+  <div class="panel">
+    <div class="row">
+      <label for="msgSel">Message</label><select id="msgSel"></select>
+      <label for="cribIn">Crib</label><input type="text" id="cribIn" style="flex:1 1 240px;text-transform:uppercase">
+    </div>
+    <div class="note" id="msgIntel"></div>
+    <div class="ctape-wrap"><div class="ctape" id="ctape"></div></div>
+    <div class="row">
+      <label for="cribPos">Position</label>
+      <input type="range" id="cribPos" min="0" max="10" value="0" style="flex:1 1 260px;accent-color:var(--amber)">
+      <button id="cribPrev">◀ Previous possible</button><button id="cribNext">Next possible ▶</button>
+    </div>
+    <div class="verdict" id="cribVerdict" aria-live="polite"></div>
+  </div>
+  <div class="grid-2">
+    <div class="panel">
+      <div class="row" style="justify-content:space-between"><h3>The menu</h3><span class="small muted">Amber links are loops</span></div>
+      <div class="menu-svg"><svg id="menuSvg" viewBox="0 0 640 420"></svg></div>
+      <div class="stats" id="menuStats"></div>
+    </div>
+    <div class="panel">
+      <h3>Letters in the menu</h3>
+      <p class="small muted">Click a crib letter to leave it out. Use the quick buttons to try one end of the crib.</p>
+      <div class="toggles" id="toggles"></div>
+      <div class="row"><button id="useAll">All</button><button id="useFirst">First 14</button><button id="useLast">Last 14</button></div>
+      <div class="setgrid">
+        <label for="testSel">Test letter</label><select id="testSel"></select>
+      </div>
+      <div class="note" id="menuAdvice"></div>
+      <button class="primary" id="toBombe">Wire up the Bombe →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 4 BOMBE ================= -->
+<section class="tab" id="tab-bombe" hidden>
+  <div class="intro"><p>Each link in the menu gets its own drum stack (an Enigma with no plugboard), set ahead by that link's step. The stacks are cabled together according to the menu, a voltage goes onto one wire of the test letter's cable, and the test register shows which wires went live. Anything other than all 26 is a stop.</p></div>
+  <div class="stage-wrap">
+  <div class="stage-bar" id="bBar" hidden>
+    <div class="seg" role="group" aria-label="Bombe view"><button data-bv="3d" aria-pressed="true">3D machine</button><button data-bv="flat" aria-pressed="false">Flat panel</button></div>
+    <div class="cams"><button data-bcam="front">Front</button><button data-bcam="close">Drums close up</button><button data-bcam="indicator">Indicator &amp; register</button><button data-bcam="back">Back: menu cables</button></div>
+  </div>
+  <div class="stage3d" id="b3d" hidden><div class="hint">Drag to walk round the machine · the back shows your menu cabled up</div></div>
+  <div class="bombe-face" id="bombeFace"><svg id="bombeSvg" viewBox="0 0 760 440"></svg></div>
+  </div>
+  <div class="grid-2">
+    <div class="panel">
+      <h3>Controls</h3>
+      <div class="setgrid">
+        <label>Wheel orders</label>
+        <div class="row"><select id="bWhich"><option value="all">All 60 (rotors I–V)</option><option value="one">Just this order:</option></select><span id="bOneOrder" class="row"></span></div>
+        <label for="bRefl">Reflector</label><select id="bRefl"><option>B</option><option>C</option></select>
+        <label>Diagonal board</label><label class="switch"><input type="checkbox" id="bDiag" checked> Welchman's diagonal board connected</label>
+        <label for="bTest">Test register on</label><select id="bTest"></select>
+        <label for="bInput">Voltage on wire</label><select id="bInput"></select>
+      </div>
+      <div class="row">
+        <button class="primary" id="bRun">Run at full speed</button>
+        <button id="bReal">Run at 1940 speed</button>
+        <button id="bStep">Step one position</button>
+        <button id="bStop" disabled>Stop</button>
+      </div>
+      <div class="progress"><i id="bProg"></i></div>
+      <div class="stats" id="bStats"></div>
+      <p class="small muted">"1940 speed" steps through one wheel order at about 15 positions a second, as the real machine did, with each stop shown as it happens. It takes around 20 minutes. "Full speed" runs every chosen order in the background in seconds and tells you what that would have cost in Bombe time.</p>
+    </div>
+    <div class="panel">
+      <div class="row" style="justify-content:space-between"><h3>Test register</h3><div class="indicator" id="bIndicator"></div></div>
+      <div class="register" id="register"></div>
+      <p class="small muted" id="regNote">The register shows which of the test letter's 26 wires are live.</p>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="row" style="justify-content:space-between"><h3>Stops</h3><span class="small muted">Click a stop to see its register · consistent stops first</span></div>
+    <div class="tablewrap"><table class="stops"><thead><tr><th>#</th><th>Wheel order</th><th>Drums</th><th>Live</th><th>Stecker</th><th>Deduced plugboard</th><th>Check</th><th></th></tr></thead><tbody id="stopsBody"></tbody></table></div>
+    <div id="stopNote"></div>
+  </div>
+</section>
+
+<!-- ================= 5 CHECKING ================= -->
+<section class="tab" id="tab-check" hidden>
+  <div class="intro"><p>A stop gives the wheel order, the rotor cores and part of the plugboard. Here you finish the job as Hut 6 did. Decrypt with the rings at A, find the right-hand ring setting from where the text goes wrong, fill in the missing plug pairs from the garbled letters, and then recover the rest of the daily key from the message indicator.</p></div>
+  <div class="note" id="chkEmpty">No stop loaded yet. Run the Bombe and press <strong>Check</strong> on a stop, or load a message's stop automatically:<div class="row" style="margin-top:8px" id="chkQuick"></div></div>
+  <div id="chkBody" class="stack" hidden>
+    <div class="grid-2">
+      <div class="panel">
+        <h3>Checking machine settings</h3>
+        <div class="setgrid">
+          <label>Rotors</label><div class="row" id="cRotors"></div>
+          <label for="cRefl">Reflector</label><select id="cRefl"><option>B</option><option>C</option></select>
+          <label>Rings</label><div class="row" id="cRings"></div>
+          <label></label><label class="switch"><input type="checkbox" id="cKeep" checked> Turning a ring also turns its window (keeps the wiring where the Bombe found it)</label>
+          <label>Start windows</label><div class="row" id="cStart"></div>
+          <label for="cPlugs">Plugboard</label><input type="text" id="cPlugs">
+        </div>
+        <div class="row"><button id="cPlugsApply">Set pairs</button><button id="cRingFind">Find the ring setting</button></div>
+        <div id="ringFinder" class="stack" hidden></div>
+      </div>
+      <div class="panel">
+        <h3>Progress</h3>
+        <div class="stats" id="cStats"></div>
+        <div id="cHint" class="note"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="row" style="justify-content:space-between"><h3>Decrypt</h3><span class="small muted">Small letters are cipher, large are output · amber is the crib · click a letter to correct it</span></div>
+      <div id="helper"></div>
+      <div class="dec" id="dec"></div>
+    </div>
+    <div id="solved"></div>
+    <div class="panel" id="indicatorPanel">
+      <h3>Recover the whole daily key</h3>
+      <p class="small">The Bombe can't find the left and middle ring settings, because they rarely affect a message. But the header gives the Grundstellung and the encrypted message key. The right daily key must turn one into the start windows you found, so try every left and middle ring and keep the ones that do.</p>
+      <button id="indBtn">Search the indicator</button>
+      <div id="indOut"></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <p>Enigma wiring, notches and double-stepping follow the wartime machines. The Enigma was checked against the standard test (rotors I-II-III, reflector B, rings and windows at A: AAAAA → BDZGO), the double step (ADU → ADV AEW BFX) and three genuine wartime messages, each decrypted letter for letter from its published key: the Operation Barbarossa report (1941), the Dönitz succession signal (1945) and the U-534 "von Looks" signal. Rotor wirings match Crypto Museum's tables. The Bombe works the way the British machine did: offset scramblers, 26-wire cables, the diagonal board and a test register. Like the real machine, it assumes the middle rotor doesn't move during the menu.</p>
+  <p>The weather, daily and High Command intercepts are reconstructions written for this bench. The Barbarossa and Dönitz messages are genuine, with ciphertext exactly as published by the sources linked on their cards.</p>
+</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script id="engine">
+const ABC="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const ROTORS={
+  I:{w:"EKMFLGDQVZNTOWYHXUSPAIBRCJ",n:"Q"}, II:{w:"AJDKSIRUXBLHWTMCQGZNPYFVOE",n:"E"},
+  III:{w:"BDFHJLCPRTXVZNYEIWGAKMUSQO",n:"V"}, IV:{w:"ESOVPZJAYQUIRHXLNFTGKDCMWB",n:"J"},
+  V:{w:"VZBRGITYUPSDNHLXAWMJQOFECK",n:"Z"}, VI:{w:"JPGVOUMFYQBENHZRDKASXLICTW",n:"ZM"},
+  VII:{w:"NZJHGRCXMYSWBOUFAIVLPEKQDT",n:"ZM"}, VIII:{w:"FKQHTLXOCBJSPDZRAMEWNIUYGV",n:"ZM"},
+  Beta:{w:"LEYJVCNIXWPBQMDRTAKZGFUHOS",n:""}, Gamma:{w:"FSOKANUERHMBTIYCWLQPZXVGJD",n:""}
+};
+const REFLECTORS={A:"EJMZALYXVBWFCRQUONTSPIKHGD",B:"YRUHQSLDPXNGOKMIEBFZCWVJAT",C:"FVPJIAOYEDRZXWGCTKUQSBNMHL",
+  "B-thin":"ENKQAUYWJICOPBLMDXZVFTHRGS","C-thin":"RDOBJNTKVEHMLFCWZAXGYIPSUQ"};
+const idx=c=>c.charCodeAt(0)-65, chr=i=>String.fromCharCode(65+((i%26)+26)%26);
+const mod=n=>((n%26)+26)%26;
+const RT={};
+for(const k in ROTORS){const f=[...ROTORS[k].w].map(idx),b=new Array(26);f.forEach((v,i)=>b[v]=i);RT[k]={f,b,notch:[...ROTORS[k].n].map(idx)};}
+const REF={};for(const k in REFLECTORS)REF[k]=[...REFLECTORS[k]].map(idx);
+function plugMap(plugs){const p=[...Array(26).keys()];(plugs||"").trim().split(/\s+/).filter(Boolean).forEach(pr=>{if(pr.length!==2)return;const a=idx(pr[0]),b=idx(pr[1]);if(a<0||a>25||b<0||b>25||a===b)return;p[a]=b;p[b]=a;});return p;}
+class Enigma{
+  constructor(cfg){this.set(cfg);}
+  set(cfg){this.cfg=JSON.parse(JSON.stringify(cfg));this.pb=plugMap(cfg.plugs);this.pos=cfg.pos.map(x=>typeof x==="string"?idx(x):x);this.rings=cfg.rings.map(x=>typeof x==="string"?idx(x):x);}
+  step(){
+    const n=this.cfg.rotors.length,L=n-3,M=n-2,R=n-1,rot=this.cfg.rotors,p=this.pos;
+    const atNotch=i=>RT[rot[i]].notch.includes(p[i]);
+    if(atNotch(M)){p[M]=mod(p[M]+1);p[L]=mod(p[L]+1);}
+    else if(atNotch(R)){p[M]=mod(p[M]+1);}
+    p[R]=mod(p[R]+1);
+  }
+  scramble(c){
+    const rot=this.cfg.rotors,n=rot.length;
+    for(let i=n-1;i>=0;i--){const s=this.pos[i]-this.rings[i];c=mod(RT[rot[i]].f[mod(c+s)]-s);}
+    c=REF[this.cfg.reflector][c];
+    for(let i=0;i<n;i++){const s=this.pos[i]-this.rings[i];c=mod(RT[rot[i]].b[mod(c+s)]-s);}
+    return c;
+  }
+  press(ch){this.step();return chr(this.pb[this.scramble(this.pb[idx(ch)])]);}
+  pressTrace(ch){
+    this.step();const st=[];const rot=this.cfg.rotors,n=rot.length;let c=idx(ch);
+    c=this.pb[c];st.push(["plug",c]);
+    for(let i=n-1;i>=0;i--){const s=this.pos[i]-this.rings[i];c=mod(RT[rot[i]].f[mod(c+s)]-s);st.push([rot[i],c]);}
+    c=REF[this.cfg.reflector][c];st.push(["UKW",c]);
+    for(let i=0;i<n;i++){const s=this.pos[i]-this.rings[i];c=mod(RT[rot[i]].b[mod(c+s)]-s);st.push([rot[i],c,1]);}
+    c=this.pb[c];st.push(["plug",c,1]);
+    return {out:chr(c),st};
+  }
+  run(text){let o="";for(const ch of text)if(ch>="A"&&ch<="Z")o+=this.press(ch);return o;}
+  windows(){return this.pos.map(chr).join("");}
+}
+function scramblerTable(order,reflector){
+  const tbl=new Uint8Array(26*26*26*26),fL=RT[order[0]].f,fM=RT[order[1]].f,fR=RT[order[2]].f,bL=RT[order[0]].b,bM=RT[order[1]].b,bR=RT[order[2]].b,U=REF[reflector];
+  for(let l=0;l<26;l++)for(let m=0;m<26;m++)for(let r=0;r<26;r++){
+    const base=((l*26+m)*26+r)*26;
+    for(let x=0;x<26;x++){
+      let c=mod(fR[mod(x+r)]-r);c=mod(fM[mod(c+m)]-m);c=mod(fL[mod(c+l)]-l);c=U[c];
+      c=mod(bL[mod(c+l)]-l);c=mod(bM[mod(c+m)]-m);c=mod(bR[mod(c+r)]-r);
+      tbl[base+x]=c;
+    }
+  }
+  return tbl;
+}
+const FULL=(1<<26)-1;
+function flood(tbl,l,m,r,menu,diag,test,input,edgesBy){
+  const mask=new Int32Array(26),done=new Int32Array(26);const q=[test];mask[test]=1<<input;
+  while(q.length){
+    const a=q.pop();let pend=mask[a]&~done[a];if(!pend)continue;done[a]|=pend;
+    const es=edgesBy[a];
+    while(pend){const y=31-Math.clz32(pend);pend&=~(1<<y);
+      for(let j=0;j<es.length;j++){const e=es[j];const z=tbl[((l*26+m)*26+mod(r+e.k))*26+y];const bit=1<<z;if(!(mask[e.o]&bit)){mask[e.o]|=bit;q.push(e.o);}}
+      if(diag&&y!==a){const bit=1<<a;if(!(mask[y]&bit)){mask[y]|=bit;q.push(y);}}
+    }
+    if(mask[test]===FULL)return mask;
+  }
+  return mask;
+}
+function edgesByLetter(menu){const e=[...Array(26)].map(()=>[]);menu.forEach(({k,a,b})=>{e[a].push({k,o:b});if(a!==b)e[b].push({k,o:a});});return e;}
+const popc=x=>{x=x-((x>>1)&0x55555555);x=(x&0x33333333)+((x>>2)&0x33333333);return(((x+(x>>4))&0xF0F0F0F)*0x1010101)>>24;};
+function deduce(tbl,stop,menu,diag,test){
+  const eb=edgesByLetter(menu);const tm=stop.testMask;const lit=popc(tm);
+  let cand=null; if(lit===1)cand=31-Math.clz32(tm); else if(lit===25){for(let y=0;y<26;y++)if(!(tm&(1<<y)))cand=y;}
+  else{for(let y=0;y<26&&cand==null;y++){const f=flood(tbl,stop.l,stop.m,stop.r,menu,diag,test,y,eb);if(popc(f[test])===1)cand=y;}}
+  if(cand==null)return {cand:null,pairs:{},ok:false};
+  const mk=flood(tbl,stop.l,stop.m,stop.r,menu,true,test,cand,eb);
+  const pairs={};let ok=true;const letters=new Set();menu.forEach(e=>{letters.add(e.a);letters.add(e.b);});
+  for(const a of letters){const c=popc(mk[a]);if(c===1){pairs[a]=31-Math.clz32(mk[a]);}else if(c>1)ok=false;}
+  const plug={};for(const a in pairs){const A=+a,b=pairs[a];
+    if((plug[A]!=null&&plug[A]!==b)||(plug[b]!=null&&plug[b]!==A))ok=false;plug[A]=b;plug[b]=A;}
+  return {cand,pairs,ok};
+}
+function allOrders(set){const out=[];for(const a of set)for(const b of set)for(const c of set)if(a!==b&&b!==c&&a!==c)out.push([a,b,c]);return out;}
+</script>
+<script id="sim3d">
+window.Sim3D=(function(){
+  if(!window.THREE||!THREE.OrbitControls)return null;
+  try{const c=document.createElement("canvas");if(!(c.getContext("webgl")||c.getContext("experimental-webgl")))return null;}catch(e){return null;}
+  const T=THREE,TAU=Math.PI*2,QW=["QWERTZUIO","ASDFGHJK","PYXCVBNML"];
+  const MONO="'IBM Plex Mono',ui-monospace,Menlo,monospace";
+  const cache={};
+  function canvasTex(key,w,h,draw){if(cache[key])return cache[key];const c=document.createElement("canvas");c.width=w;c.height=h;draw(c.getContext("2d"),w,h);const t=new T.CanvasTexture(c);t.anisotropy=4;cache[key]=t;return t;}
+  function letterTex(txt,fg,bg,round,size=128,scale=.6){
+    return canvasTex(["L",txt,fg,bg,round,size,scale].join("|"),size,size,(g,w)=>{
+      if(bg){g.fillStyle=bg;if(round){g.beginPath();g.arc(w/2,w/2,w/2,0,TAU);g.fill();}else g.fillRect(0,0,w,w);}
+      g.fillStyle=fg;g.font=`600 ${Math.round(w*scale)}px ${MONO}`;g.textAlign="center";g.textBaseline="middle";g.fillText(txt,w/2,w/2+w*.04);});
+  }
+  function labelTex(txt,fg,bg,w=512,h=96,px=52){
+    return canvasTex(["T",txt,fg,bg,w,h,px].join("|"),w,h,(g)=>{if(bg){g.fillStyle=bg;g.fillRect(0,0,w,h);}g.fillStyle=fg;g.font=`600 ${px}px ${MONO}`;g.textAlign="center";g.textBaseline="middle";g.fillText(txt,w/2,h/2+3);});
+  }
+  const std=(color,rough=.7,metal=0,extra={})=>new T.MeshStandardMaterial({color,roughness:rough,metalness:metal,...extra});
+  const woodTex=canvasTex("wood",512,512,(g,w,h)=>{g.fillStyle="#5E3F24";g.fillRect(0,0,w,h);for(let i=0;i<160;i++){g.strokeStyle=`rgba(${30+Math.random()*30},${16+Math.random()*14},6,${.12+Math.random()*.2})`;g.lineWidth=1+Math.random()*3;g.beginPath();const y=Math.random()*h;g.moveTo(0,y);for(let x=0;x<=w;x+=32)g.lineTo(x,y+Math.sin(x/60+i)*4+Math.random()*2);g.stroke();}});
+  const crinkle=canvasTex("crinkle",256,256,(g,w,h)=>{g.fillStyle="#141615";g.fillRect(0,0,w,h);for(let i=0;i<5000;i++){const v=18+Math.random()*16;g.fillStyle=`rgb(${v},${v+1},${v})`;g.fillRect(Math.random()*w,Math.random()*h,2,2);}});
+  crinkle.wrapS=crinkle.wrapT=T.RepeatWrapping;crinkle.repeat.set(4,4);
+  const ridgeTex=canvasTex("ridge",256,32,(g,w,h)=>{for(let x=0;x<w;x+=8){g.fillStyle="#9A9E99";g.fillRect(x,0,4,h);g.fillStyle="#4A4E4B";g.fillRect(x+4,0,4,h);}});
+  ridgeTex.wrapS=T.RepeatWrapping;ridgeTex.repeat.set(6,1);
+  const tyreTex=canvasTex("tyre",1664,96,(g,w,h)=>{g.fillStyle="#E7E2D2";g.fillRect(0,0,w,h);g.fillStyle="#1A1A1A";g.font=`600 54px ${MONO}`;g.textAlign="center";g.textBaseline="middle";for(let i=0;i<26;i++){g.fillText(String.fromCharCode(65+i),(i+.5)*64,50);g.fillRect(i*64,0,2,h);}});
+
+  /* ---------- shared stage: renderer, camera, controls, render-on-demand ---------- */
+  function Stage(container,opts){
+    const renderer=new T.WebGLRenderer({antialias:true});
+    renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1));
+    renderer.domElement.style.display="block";renderer.domElement.style.touchAction="none";
+    container.appendChild(renderer.domElement);
+    const scene=new T.Scene();scene.background=new T.Color(opts.bg||"#0F1311");
+    const camera=new T.PerspectiveCamera(opts.fov||35,1,1,5000);
+    const controls=new T.OrbitControls(camera,renderer.domElement);
+    controls.enableDamping=true;controls.dampingFactor=.12;controls.maxPolarAngle=Math.PI*.49;
+    if(opts.minD)controls.minDistance=opts.minD;if(opts.maxD)controls.maxDistance=opts.maxD;
+    scene.add(new T.HemisphereLight("#FFF6E6","#20261F",1.0));
+    const key=new T.DirectionalLight("#FFF3DC",.9);key.position.set(40,90,60);scene.add(key);
+    const fill=new T.DirectionalLight("#BFD4FF",.35);fill.position.set(-60,40,-40);scene.add(fill);
+    const tweens=[];let pending=false,loops=0;
+    const st={renderer,scene,camera,controls,tweens,
+      render(){if(pending)return;pending=true;requestAnimationFrame(frame);},
+      tween(obj,prop,to,ms,cb){const from=obj[prop];tweens.push({obj,prop,from,to,t0:performance.now(),ms,cb});st.render();},
+      loop(on){loops+=on?1:-1;if(loops<0)loops=0;st.render();},
+      resize(){const w=container.clientWidth,h=container.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);renderer.domElement.style.width=w+"px";renderer.domElement.style.height=h+"px";camera.aspect=w/h;camera.updateProjectionMatrix();st.render();},
+      fly(pos,target,ms=650){const p0=camera.position.clone(),t0=controls.target.clone(),P=new T.Vector3(...pos),Tg=new T.Vector3(...target);const s=performance.now();
+        const step=()=>{const k=Math.min(1,(performance.now()-s)/ms),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;camera.position.lerpVectors(p0,P,e);controls.target.lerpVectors(t0,Tg,e);controls.update();renderer.render(scene,camera);if(k<1)requestAnimationFrame(step);};step();},
+      onFrame:null};
+    function frame(now){
+      pending=false;const t=performance.now();
+      for(let i=tweens.length-1;i>=0;i--){const w=tweens[i];const k=Math.min(1,(t-w.t0)/w.ms);const e=1-Math.pow(1-k,3);w.obj[w.prop]=w.from+(w.to-w.from)*e;if(k>=1){tweens.splice(i,1);w.cb&&w.cb();}}
+      st.onFrame&&st.onFrame(t);
+      const moving=controls.update();renderer.render(scene,camera);
+      if(tweens.length||loops||moving)st.render();
+    }
+    controls.addEventListener("change",()=>st.render());
+    new ResizeObserver(()=>st.resize()).observe(container);
+    // picking
+    const ray=new T.Raycaster(),ndc=new T.Vector2();
+    st.pick=(e,list)=>{const r=renderer.domElement.getBoundingClientRect();ndc.set(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1);ray.setFromCamera(ndc,camera);
+      const hit=ray.intersectObjects(list,true)[0];if(!hit)return null;let o=hit.object;while(o&&!o.userData.kind)o=o.parent;return o;};
+    return st;
+  }
+  const box=(w,h,d,mat,x=0,y=0,z=0,parent)=>{const m=new T.Mesh(new T.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);parent&&parent.add(m);return m;};
+  const plane=(w,h,mat,parent)=>{const m=new T.Mesh(new T.PlaneGeometry(w,h),mat);parent&&parent.add(m);return m;};
+
+  /* =============================== ENIGMA =============================== */
+  function Enigma3D(container,api){
+    const S=Stage(container,{bg:"#0F1311",minD:25,maxD:160});
+    const {scene,camera,controls}=S;
+    const root=new T.Group();scene.add(root);
+    const wood=std("#FFFFFF",.8,0,{map:woodTex});
+    const black=std("#FFFFFF",.9,.1,{map:crinkle});
+    const metal=std("#A9AEA9",.35,.8);
+    const dark=std("#0B0C0B",.6,.2);
+    // table
+    const table=new T.Mesh(new T.CircleGeometry(120,48),std("#1A1F1C",.95));table.rotation.x=-Math.PI/2;table.position.y=-.01;root.add(table);
+    // case: 34 wide (x), 12 high (y), 28 deep (z)
+    box(35,12,29,wood,0,6,0,root);
+    box(33.6,.3,27.6,black,0,12.1,0,root);
+    // front plugboard panel (flap folded down in front)
+    box(33,9.6,.3,black,0,5.6,14.6,root);
+    const flap=box(35,.8,10,wood,0,.4,19.6,root);
+    const flapIn=box(33,.1,9,std("#2A1C12",.9),0,.85,19.6,root);
+    // open lid standing at the back
+    const lid=new T.Group();lid.position.set(0,12,-14.5);root.add(lid);
+    const lidBox=box(35,.9,14,wood,0,0,-7,lid);lidBox.position.set(0,7,0);lidBox.rotation.x=Math.PI/2*.97;
+    const lidIn=box(31,.1,12,std("#2B211A",.9),0,7,.5,lid);lidIn.rotation.x=Math.PI/2*.97;
+    // brass nameplate
+    const plateMat=new T.MeshBasicMaterial({map:labelTex("ENIGMA","#C09A5B","#141615",512,80,48)});
+    const nameplate=plane(9,1.4,plateMat,root);nameplate.rotation.x=-Math.PI/2;nameplate.position.set(0,12.27,-3.8);
+    /* rotors */
+    const rotorGroup=new T.Group();root.add(rotorGroup);
+    const cover=box(26,3.6,8.4,black,-1,14,-9.4,root);cover.userData.cover=true;
+    const coverEdge=box(26.2,.2,.4,metal,-1,15.85,-5.2,root);
+    let rotors=[];
+    function buildRotors(names){
+      while(rotorGroup.children.length)rotorGroup.remove(rotorGroup.children[0]);rotors=[];
+      const n=names.length,sp=5.4,x0=-(n-1)/2*sp+1;
+      // reflector (left) and entry wheel (right)
+      const refl=new T.Mesh(new T.CylinderGeometry(4.1,4.1,2.2,40),std("#6B706C",.5,.6));refl.rotation.z=Math.PI/2;refl.position.set(x0-4.6,11.2,-9.4);rotorGroup.add(refl);
+      const etw=new T.Mesh(new T.CylinderGeometry(4.1,4.1,1.6,40),std("#6B706C",.5,.6));etw.rotation.z=Math.PI/2;etw.position.set(x0+(n-1)*sp+4.2,11.2,-9.4);rotorGroup.add(etw);
+      names.forEach((nm,i)=>{
+        const x=x0+i*sp;const g=new T.Group();g.position.set(x,11.2,-9.4);rotorGroup.add(g);
+        const spin=new T.Group();g.add(spin);
+        const body=new T.Mesh(new T.CylinderGeometry(3.9,3.9,3.2,48),std("#2B2F2C",.5,.4));body.rotation.z=Math.PI/2;spin.add(body);
+        const tyreG=new T.CylinderGeometry(4.25,4.25,1.9,52,1,true);const tyre=new T.Mesh(tyreG,new T.MeshStandardMaterial({map:tyreTex,roughness:.6}));tyre.rotation.z=-Math.PI/2;tyre.position.x=-.6;spin.add(tyre);
+        const thumb=new T.Mesh(new T.CylinderGeometry(5.6,5.6,.9,64),new T.MeshStandardMaterial({map:ridgeTex,roughness:.5,metalness:.6}));thumb.rotation.z=Math.PI/2;thumb.position.x=1.25;spin.add(thumb);
+        thumb.userData={kind:"thumb",i};
+        // window (letter plate on cover) and slot surround
+        const frame=plane(2.3,2.3,new T.MeshBasicMaterial({color:"#6E746F"}),root);frame.rotation.x=-Math.PI/2;frame.position.set(x-.6,15.83,-8.6);
+        const winMat=new T.MeshBasicMaterial({map:letterTex("A","#111","#EDE9DC",false)});
+        const win=plane(1.9,1.9,winMat,root);win.rotation.x=-Math.PI/2;win.position.set(x-.6,15.85,-8.6);
+        const lab=plane(3.4,.8,new T.MeshBasicMaterial({map:labelTex(nm,"#C09A5B","#141615",256,64,40),transparent:true}),root);lab.rotation.x=-Math.PI/2;lab.position.set(x-.2,15.85,-6.3);
+        const hit=new T.Mesh(new T.BoxGeometry(1.4,3.2,5),new T.MeshBasicMaterial({visible:false}));hit.position.set(x+1.25,16.2,-9.4);hit.userData={kind:"thumb",i};root.add(hit);
+        rotors.push({g,spin,win,winMat,frame,lab,hit,thumb,angle:0});
+      });
+    }
+    /* lamps + keys */
+    const lamps={},keys={};
+    const lampOff=L=>letterTex(L,"#6A6F6A","#1C1E1C",true),lampOn=L=>letterTex(L,"#3A2408","#FFD37A",true);
+    QW.forEach((row,r)=>[...row].forEach((L,i)=>{
+      const x=(i-(row.length-1)/2)*3.35;
+      // lamp window
+      const ring=new T.Mesh(new T.CylinderGeometry(1.35,1.35,.12,32),metal);ring.position.set(x,12.3,-1.9+r*2.9);root.add(ring);
+      const m=new T.MeshBasicMaterial({map:lampOff(L)});const lamp=new T.Mesh(new T.CircleGeometry(1.1,32),m);lamp.rotation.x=-Math.PI/2;lamp.position.set(x,12.38,-1.9+r*2.9);root.add(lamp);
+      const glow=new T.PointLight("#FFB84D",0,9);glow.position.set(x,13.5,-1.9+r*2.9);root.add(glow);
+      lamps[L]={m,glow};
+      // key
+      const kg=new T.Group();kg.position.set(x,12.25,7.2+r*3.1);root.add(kg);
+      const stem=new T.Mesh(new T.CylinderGeometry(.35,.35,1.6,12),metal);stem.position.y=.8;kg.add(stem);
+      const cap=new T.Mesh(new T.CylinderGeometry(1.25,1.25,.55,36),[std("#1A1C1A",.5,.2),new T.MeshStandardMaterial({map:letterTex(L,"#F2F3EF","#161816",true),roughness:.4}),std("#111",.5)]);cap.position.y=1.9;cap.rotation.y=Math.PI/2;kg.add(cap);
+      const rim=new T.Mesh(new T.TorusGeometry(1.3,.14,10,36),metal);rim.rotation.x=Math.PI/2;rim.position.y=1.98;kg.add(rim);
+      kg.userData={kind:"key",L};keys[L]={g:kg,y0:12.25};
+    }));
+    /* plugboard sockets on the front panel */
+    const sockets={};
+    QW.forEach((row,r)=>[...row].forEach((L,i)=>{
+      const x=(i-(row.length-1)/2)*3.35,y=8.5-r*2.75;
+      const g=new T.Group();g.position.set(x,y,14.78);root.add(g);
+      const pl=box(2.2,1.6,.12,std("#222523",.6,.3),0,0,0,g);
+      [-.5,.5].forEach(dx=>{const hole=new T.Mesh(new T.CylinderGeometry(.3,.3,.14,16),dark);hole.rotation.x=Math.PI/2;hole.position.set(dx,.15,.04);g.add(hole);});
+      const lab=plane(1,.6,new T.MeshBasicMaterial({map:letterTex(L,"#B9C0BA",null,false,64,.8),transparent:true}),g);lab.position.set(0,-.55,.08);
+      g.userData={kind:"socket",L};sockets[L]={g,pl};
+    }));
+    const cableGroup=new T.Group();root.add(cableGroup);
+    const CAB=["#C9A15A","#9DB8C8","#C98B7A","#A8C49A","#C7B3D6","#D9C27A","#8FB7A8","#D69AA6","#B0A58E","#9AA7D6","#C4C4B4","#D8A86A","#8AC0C8"];
+    function setPlugs(pairs,sel){
+      while(cableGroup.children.length)cableGroup.remove(cableGroup.children[0]);
+      const used=new Set(pairs.join(""));
+      Object.entries(sockets).forEach(([L,s])=>{s.pl.material=std(sel===L?"#F2A93B":used.has(L)?"#3A3F3B":"#222523",.6,.3);});
+      pairs.forEach((p,i)=>{
+        const a=sockets[p[0]].g.position,b=sockets[p[1]].g.position;const col=CAB[i%13];
+        const A=new T.Vector3(a.x,a.y+.15,a.z+.4),B=new T.Vector3(b.x,b.y+.15,b.z+.4);
+        const sag=2.2+Math.abs(a.x-b.x)*.08;
+        const curve=new T.CatmullRomCurve3([A,new T.Vector3(A.x,A.y-.8,A.z+1.6),new T.Vector3((A.x+B.x)/2,Math.min(A.y,B.y)-sag,Math.max(A.z,B.z)+2.8),new T.Vector3(B.x,B.y-.8,B.z+1.6),B]);
+        const tube=new T.Mesh(new T.TubeGeometry(curve,40,.2,8,false),std(col,.55));cableGroup.add(tube);
+        [A,B].forEach(P=>{const plug=new T.Mesh(new T.CylinderGeometry(.42,.42,1,16),std("#161816",.4,.3));plug.rotation.x=Math.PI/2;plug.position.set(P.x,P.y,P.z+.1);cableGroup.add(plug);});
+      });
+      S.render();
+    }
+    /* state setters */
+    let ringStyle="L",curPos=[];
+    function setPositions(pos,style){
+      ringStyle=style||ringStyle;curPos=pos.slice();
+      pos.forEach((p,i)=>{const R=rotors[i];if(!R)return;
+        const txt=ringStyle==="N"?String(p+1).padStart(2,"0"):String.fromCharCode(65+p);
+        R.winMat.map=letterTex(txt,"#111","#EDE9DC",false,128,txt.length>1?.45:.6);R.winMat.needsUpdate=true;
+        // spin so letter p sits under the window (tyre letter i centred at u=(i+.5)/26; the top is u=.75 at rest)
+        let target=-(3*Math.PI/2-TAU*(p+.5)/26);let cur=R.spin.rotation.x;while(target-cur>Math.PI)target-=TAU;while(target-cur<-Math.PI)target+=TAU;
+        S.tween(R.spin.rotation,"x",target,140);
+      });
+      S.render();
+    }
+    let lit=null,down=null;
+    function press(L,out){
+      if(down)release();
+      down=L;const k=keys[L];S.tween(k.g.position,"y",k.y0-.55,70);
+      lit=out;lamps[out].m.map=lampOn(out);lamps[out].m.needsUpdate=true;lamps[out].glow.intensity=1.4;S.render();
+    }
+    function release(){
+      if(down){const k=keys[down];S.tween(k.g.position,"y",k.y0,110);down=null;}
+      if(lit){lamps[lit].m.map=lampOff(lit);lamps[lit].m.needsUpdate=true;lamps[lit].glow.intensity=0;lit=null;}S.render();
+    }
+    function setModel(text){plateMat.map=labelTex(text,"#C09A5B","#141615",768,80,40);plateMat.needsUpdate=true;S.render();}
+    function setCover(on){cover.visible=on;coverEdge.visible=on;rotors.forEach(R=>{R.win.visible=on;R.frame.visible=on;R.lab.visible=on;});S.render();}
+    /* input */
+    const pickables=()=>[...Object.values(keys).map(k=>k.g),...Object.values(sockets).map(s=>s.g),...rotors.map(r=>r.hit),...rotors.map(r=>r.thumb)];
+    let drag=null;const el=S.renderer.domElement;
+    el.addEventListener("pointerdown",e=>{
+      const o=S.pick(e,pickables());if(!o)return;
+      controls.enabled=false;el.setPointerCapture(e.pointerId);
+      if(o.userData.kind==="key"){api.press(o.userData.L);drag={kind:"key"};}
+      else if(o.userData.kind==="socket"){api.socket(o.userData.L);drag={kind:"socket"};}
+      else if(o.userData.kind==="thumb"){drag={kind:"thumb",i:o.userData.i,y:e.clientY,moved:false};}
+    });
+    el.addEventListener("pointermove",e=>{
+      if(drag&&drag.kind==="thumb"){const dy=e.clientY-drag.y;if(Math.abs(dy)>=14){const n=Math.trunc(dy/14);drag.y+=n*14;drag.moved=true;api.turn(drag.i,n>0?1:-1);}return;}
+      if(!drag){const o=S.pick(e,pickables());el.style.cursor=o?(o.userData.kind==="thumb"?"ns-resize":"pointer"):"grab";}
+    });
+    const end=e=>{if(!drag)return;if(drag.kind==="key")api.release();if(drag.kind==="thumb"&&!drag.moved)api.turn(drag.i,1);drag=null;controls.enabled=true;};
+    el.addEventListener("pointerup",end);el.addEventListener("pointercancel",end);
+    el.addEventListener("wheel",e=>{const o=S.pick(e,pickables());if(o&&o.userData.kind==="thumb"){e.preventDefault();e.stopImmediatePropagation();api.turn(o.userData.i,e.deltaY>0?1:-1);}},{capture:true,passive:false});
+    const views={operator:[[0,50,56],[0,9,1]],rotors:[[4,36,14],[0,13,-8]],plugboard:[[0,12,66],[0,6,14]],top:[[0,90,14],[0,10,3]]};
+    function view(name,ms){const v=views[name];if(v)S.fly(v[0],v[1],ms);}
+    camera.position.set(...views.operator[0]);controls.target.set(...views.operator[1]);controls.update();
+    S.resize();
+    return {setRotors:(names)=>{buildRotors(names);setPositions(curPos.length===names.length?curPos:names.map(()=>0));},setPositions,press,release,setPlugs,setModel,setCover,view,resize:S.resize};
+  }
+
+  /* =============================== BOMBE =============================== */
+  function Bombe3D(container){
+    const S=Stage(container,{bg:"#0C0F0D",fov:32,minD:60,maxD:900});
+    const {scene,camera,controls}=S;controls.maxPolarAngle=Math.PI*.55;
+    const root=new T.Group();scene.add(root);
+    const floor=new T.Mesh(new T.PlaneGeometry(900,900),std("#161A17",.95));floor.rotation.x=-Math.PI/2;root.add(floor);
+    const cab=std("#262B28",.75,.3),cabDark=std("#161A18",.8,.2),steel=std("#9AA29C",.35,.75);
+    // cabinet 210 wide, 196 high, 62 deep; front at z=+31
+    box(210,196,62,cab,0,98,0,root);
+    box(214,4,66,cabDark,0,197,0,root);box(214,6,66,cabDark,0,3,0,root);
+    box(186,168,1,cabDark,-10,112,31.2,root);           // drum panel
+    box(18,168,1,cabDark,94,112,31.2,root);             // right-hand end panel
+    const faceTex=canvasTex("drumface",256,256,(g,w)=>{g.fillStyle="#D8D6CA";g.beginPath();g.arc(w/2,w/2,w/2,0,TAU);g.fill();g.fillStyle="#2B2F2C";g.beginPath();g.arc(w/2,w/2,w*.22,0,TAU);g.fill();
+      g.fillStyle="#1A1A1A";g.font=`600 26px ${MONO}`;g.textAlign="center";g.textBaseline="middle";
+      for(let i=0;i<26;i++){const a=i/26*TAU;g.save();g.translate(w/2+Math.sin(a)*w*.39,w/2-Math.cos(a)*w*.39);g.rotate(a);g.fillText(String.fromCharCode(65+i),0,0);g.restore();}
+      for(let i=0;i<26;i++){const a=(i+.5)/26*TAU;g.strokeStyle="#8A8A80";g.lineWidth=2;g.beginPath();g.moveTo(w/2+Math.sin(a)*w*.3,w/2-Math.cos(a)*w*.3);g.lineTo(w/2+Math.sin(a)*w*.47,w/2-Math.cos(a)*w*.47);g.stroke();}});
+    const faceOn=new T.MeshBasicMaterial({map:faceTex}),faceOff=new T.MeshBasicMaterial({map:faceTex,color:"#4A4D48"});
+    const drumSide=std("#7E8680",.4,.7),drumSideOff=std("#3A3E3B",.6,.4);
+    const idxMat=new T.MeshBasicMaterial({color:"#F2A93B"});
+    const stacks=[];
+    for(let s=0;s<36;s++){
+      const bank=Math.floor(s/12),col=s%12;const x=-94+col*15.2,yTop=182-bank*54;
+      const drums=[];
+      for(let d=0;d<3;d++){
+        const y=yTop-d*15;const g=new T.Group();g.position.set(x,y,32);root.add(g);
+        const body=new T.Mesh(new T.CylinderGeometry(6.2,6.2,3,40),drumSideOff);body.rotation.x=Math.PI/2;body.position.z=1.5;g.add(body);
+        const face=new T.Mesh(new T.CircleGeometry(6,40),faceOff);face.position.z=3.05;g.add(face);
+        const pointer=new T.Mesh(new T.ConeGeometry(.9,1.8,3),idxMat);pointer.rotation.z=Math.PI;pointer.position.set(x,y+7.4,33.5);pointer.visible=false;root.add(pointer);
+        drums.push({g,body,face,pointer,rot:0});
+      }
+      const lab=plane(13,3.2,new T.MeshBasicMaterial({transparent:true,opacity:0}),root);lab.position.set(x,yTop+10.3,31.8);
+      stacks.push({drums,lab,x,yTop,used:false,k:0});
+    }
+    // right-hand end: indicator drums + test register
+    const ind=[];for(let i=0;i<3;i++){const m=new T.MeshBasicMaterial({map:letterTex("A","#111","#EDE9DC",false)});const p=plane(8,8,m,root);p.position.set(94,168-i*11,31.9);ind.push(m);}
+    const indLab=plane(16,3,new T.MeshBasicMaterial({map:labelTex("INDICATOR","#C09A5B",null,512,96,52),transparent:true}),root);indLab.position.set(94,178,31.9);
+    const orderLab=new T.MeshBasicMaterial({map:labelTex("I-II-III","#E4E8E3",null,512,96,60),transparent:true});const ol=plane(16,3,orderLab,root);ol.position.set(94,134,31.9);
+    const regLab=plane(16,3,new T.MeshBasicMaterial({map:labelTex("TEST REGISTER","#C09A5B",null,512,96,44),transparent:true}),root);regLab.position.set(94,124,31.9);
+    const regs=[];for(let i=0;i<26;i++){const c=i%2,r=Math.floor(i/2);const m=new T.MeshBasicMaterial({map:letterTex(String.fromCharCode(65+i),"#7A827C","#1E2320",true,64,.62)});
+      const p=new T.Mesh(new T.CircleGeometry(2.6,24),m);p.position.set(89.5+c*9,117-r*7.1,31.9);root.add(p);regs.push(m);}
+    // back: jacks for each stack, letter commons, diagonal board
+    const backPanel=box(200,180,1,cabDark,0,104,-31.2,root);
+    const back=new T.Group();root.add(back);
+    const diagBox=box(34,26,4,std("#3B3226",.7,.2),-80,34,-33.5,root);
+    const diagLab=plane(30,5,new T.MeshBasicMaterial({map:labelTex("DIAGONAL BOARD","#E4D3B0",null,512,96,50),transparent:true}),root);diagLab.position.set(-80,34,-35.6);diagLab.rotation.y=Math.PI;
+    let running=false,spin=0;
+    S.onFrame=t=>{if(running){spin+=.35;stacks.forEach(st=>{if(!st.used)return;st.drums[0].g.rotation.z=spin;st.drums[1].g.rotation.z=spin/26;});}};
+    const LC=["#E0A458","#8FC3E0","#C98B7A","#A8C49A","#C7B3D6","#D9C27A","#8FB7A8","#D69AA6","#B0A58E","#9AA7D6","#C4C4B4","#D8A86A","#8AC0C8","#E3735D","#6CC293","#F2A93B"];
+    let diagOn=true,diagCables=[];
+    function setMenu(menu){
+      while(back.children.length)back.remove(back.children[0]);diagCables=[];
+      const letters=[...new Set(menu.flatMap(e=>[e.a,e.b]))].sort((a,b)=>a-b);
+      const hub={};letters.forEach((L,i)=>{const x=-40+i*(130/Math.max(1,letters.length-1||1));const hb=box(6,6,3,std("#2C3330",.6,.3),x,26,-33,back);
+        const lb=plane(5,5,new T.MeshBasicMaterial({map:letterTex(String.fromCharCode(65+L),"#F2F3EF","#2C3330",false,64,.7)}),back);lb.position.set(x,26,-34.6);lb.rotation.y=Math.PI;hub[L]={x,col:LC[i%LC.length]};});
+      stacks.forEach((st,i)=>{const e=menu[i];st.used=!!e;st.k=e?e.k:0;
+        st.drums.forEach(d=>{d.face.material=e?faceOn:faceOff;d.body.material=e?drumSide:drumSideOff;d.pointer.visible=!!e;});
+        if(e){st.lab.material=new T.MeshBasicMaterial({map:labelTex(`${String.fromCharCode(65+e.a)}·${String.fromCharCode(65+e.b)} +${e.k}`,"#F2A93B",null,512,128,64),transparent:true});
+          [[e.a,-5],[e.b,5]].forEach(([L,dy])=>{const jy=st.yTop-15+dy;const jack=box(4,3,2,std("#101311",.5),st.x,jy,-32.4,back);
+            const A=new T.Vector3(st.x,jy,-33.4),H=hub[L];const B=new T.Vector3(H.x,29,-34.5);
+            const c=new T.CatmullRomCurve3([A,new T.Vector3(st.x,jy-6,-40),new T.Vector3((st.x+H.x)/2,Math.min(jy,60)-10,-46),new T.Vector3(H.x,40,-40),B]);
+            back.add(new T.Mesh(new T.TubeGeometry(c,40,.7,8,false),std(H.col,.55)));});}
+        else st.lab.material=new T.MeshBasicMaterial({transparent:true,opacity:0});
+      });
+      letters.forEach(L=>{const H=hub[L];const c=new T.CatmullRomCurve3([new T.Vector3(H.x,23,-34.5),new T.Vector3(H.x,12,-44),new T.Vector3((H.x-80)/2,10,-46),new T.Vector3(-70,28,-38)]);
+        const m=new T.Mesh(new T.TubeGeometry(c,30,.45,6,false),std("#8B8F8A",.6,.3));m.visible=diagOn;back.add(m);diagCables.push(m);});
+      S.render();
+    }
+    function drumTo(d,letter){let target=TAU*letter/26;let cur=d.g.rotation.z%TAU;d.g.rotation.z=cur;while(target-cur>Math.PI)target-=TAU;while(target-cur<-Math.PI)target+=TAU;S.tween(d.g.rotation,"z",target,120);}
+    function setDrums(order,l,m,r){
+      stacks.forEach(st=>{if(!st.used)return;drumTo(st.drums[0],(r+st.k)%26);drumTo(st.drums[1],m);drumTo(st.drums[2],l);});
+      [l,m,r].forEach((v,i)=>{ind[i].map=letterTex(String.fromCharCode(65+v),"#111","#EDE9DC",false);ind[i].needsUpdate=true;});
+      orderLab.map=labelTex(order.join("-"),"#E4E8E3",null,512,96,60);orderLab.needsUpdate=true;S.render();
+    }
+    function setRegister(mask,cand){for(let i=0;i<26;i++){const on=mask!=null&&!!(mask&(1<<i));const L=String.fromCharCode(65+i);
+      regs[i].map=on?letterTex(L,"#3A2408",cand===i?"#9BE0B8":"#FFD37A",true,64,.62):letterTex(L,cand===i?"#9BE0B8":"#7A827C","#1E2320",true,64,.62);regs[i].needsUpdate=true;}S.render();}
+    function setRunning(on){if(on===running)return;running=on;S.loop(on);}
+    function setDiag(on){diagOn=on;diagCables.forEach(c=>c.visible=on);diagBox.visible=on;diagLab.visible=on;S.render();}
+    const views={front:[[0,100,395],[-4,100,0]],back:[[0,100,-350],[0,96,0]],indicator:[[150,140,150],[94,140,30]],close:[[-60,150,120],[-60,150,30]]};
+    function view(name,ms){const v=views[name];if(v)S.fly(v[0],v[1],ms);}
+    camera.position.set(...views.front[0]);controls.target.set(...views.front[1]);controls.update();S.resize();
+    return {setMenu,setDrums,setRegister,setRunning,setDiag,view,resize:S.resize};
+  }
+  return {Enigma3D,Bombe3D};
+})();
+
+</script>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const h=(tag,attrs={},...kids)=>{const e=document.createElement(tag);for(const k in attrs){if(k==="class")e.className=attrs[k];else if(k==="text")e.textContent=attrs[k];else if(k.startsWith("on"))e.addEventListener(k.slice(2),attrs[k]);else e.setAttribute(k,attrs[k]);}kids.flat().forEach(c=>c!=null&&e.append(c));return e;};
+const NS="http://www.w3.org/2000/svg";
+const sv=(tag,attrs,parent,text)=>{const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(text!=null)e.textContent=text;if(parent)parent.appendChild(e);return e;};
+const QWERTZ=["QWERTZUIO","ASDFGHJK","PYXCVBNML"];
+const groups=(s,n=5)=>s.match(new RegExp(`.{1,${n}}`,"g"))?.join(" ")||"";
+const letters=s=>(s||"").toUpperCase().replace(/[^A-Z]/g,"");
+let ringStyle="L";
+const fmtRing=i=>ringStyle==="N"?String(i+1).padStart(2,"0"):chr(i);
+
+/* ---------- tabs ---------- */
+let E3=null,B3=null;
+function showTab(name){$$("nav.tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===name));$$(".tab").forEach(t=>t.hidden=t.id!=="tab-"+name);if(name==="enigma"){requestAnimationFrame(drawCables);E3&&requestAnimationFrame(E3.resize);}if(name==="bombe"&&B3)requestAnimationFrame(B3.resize);window.scrollTo({top:0});}
+$$("nav.tabs button").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
+
+/* =====================================================
+   1. ENIGMA
+   ===================================================== */
+const MODELS={
+  I:{plate:"ENIGMA I",rotors:["I","II","III","IV","V"],refl:["A","B","C"],greek:null,def:{reflector:"B"}},
+  M3:{plate:"ENIGMA M3 · KRIEGSMARINE",rotors:["I","II","III","IV","V","VI","VII","VIII"],refl:["B","C"],greek:null,def:{reflector:"B"}},
+  M4:{plate:"ENIGMA M4 · KRIEGSMARINE",rotors:["I","II","III","IV","V","VI","VII","VIII"],refl:["B-thin","C-thin"],greek:["Beta","Gamma"],def:{reflector:"B-thin"}}
+};
+let mcfg={model:"I",reflector:"B",rotors:["I","II","III"],rings:[0,0,0],pos:[0,0,0],plugs:""};
+let em=new Enigma(mcfg);
+let tapeIn="",tapeOut="",tapeStart=null,litLamp=null;
+const lampEls={},keyEls={},sockEls={};
+let plugSel=null;
+
+function rebuildMachine(keepPos=true){const pos=keepPos?em.pos.slice():mcfg.pos;mcfg.pos=pos;em=new Enigma(mcfg);renderRotorBay();renderLid();renderPlugs();}
+function renderRotorBay(){
+  const bay=$("#rotorbay");bay.innerHTML="";
+  const n=mcfg.rotors.length;
+  mcfg.rotors.forEach((r,i)=>{
+    const slot=h("div",{class:"rslot"+(n===4&&i===0?" greek":"")});
+    const up=h("button",{class:"thumb","aria-label":`Turn ${r} rotor back`,onclick:()=>{em.pos[i]=mod(em.pos[i]-1);updWindows();}});
+    const win=h("div",{class:"rwin",id:"win"+i,title:"Scroll or use the thumbwheels"});
+    const dn=h("button",{class:"thumb","aria-label":`Turn ${r} rotor forward`,onclick:()=>{em.pos[i]=mod(em.pos[i]+1);updWindows();}});
+    win.addEventListener("wheel",e=>{e.preventDefault();em.pos[i]=mod(em.pos[i]+(e.deltaY>0?1:-1));updWindows();},{passive:false});
+    slot.append(up,win,dn,h("div",{class:"rname",text:r+" · "+fmtRing(mcfg.rings[i])}));
+    bay.append(slot);
+  });
+  $("#modelPlate").textContent=MODELS[mcfg.model].plate+" · UKW "+mcfg.reflector.replace("-thin"," (thin)");
+  if(E3){E3.setRotors(mcfg.rotors.map((r,i)=>r+" · "+fmtRing(mcfg.rings[i])));E3.setModel($("#modelPlate").textContent);}
+  updWindows();
+}
+function updWindows(){em.pos.forEach((p,i)=>{const w=$("#win"+i);if(w)w.textContent=ringStyle==="N"?String(p+1).padStart(2,"0"):chr(p);});E3&&E3.setPositions(em.pos,ringStyle);}
+function renderLid(){
+  const M=MODELS[mcfg.model];$("#mModel").value=mcfg.model;
+  const rs=$("#mRefl");rs.innerHTML="";M.refl.forEach(r=>rs.append(h("option",{value:r,text:r.replace("-thin"," (thin)")})));rs.value=mcfg.reflector;
+  const box=$("#mRotors");box.innerHTML="";
+  mcfg.rotors.forEach((r,i)=>{
+    const opts=(M.greek&&i===0)?M.greek:M.rotors;
+    const s=h("select",{"aria-label":`Rotor slot ${i+1}`});opts.forEach(o=>s.append(h("option",{value:o,text:o})));s.value=r;
+    s.addEventListener("change",()=>{const v=s.value;const j=mcfg.rotors.indexOf(v);if(j>=0&&j!==i)mcfg.rotors[j]=mcfg.rotors[i];mcfg.rotors[i]=v;rebuildMachine();});
+    box.append(s);
+  });
+  const rb=$("#mRings");rb.innerHTML="";
+  mcfg.rings.forEach((v,i)=>{const s=h("select",{"aria-label":`Ring setting slot ${i+1}`});for(let k=0;k<26;k++)s.append(h("option",{value:k,text:fmtRing(k)}));s.value=v;s.addEventListener("change",()=>{mcfg.rings[i]=+s.value;rebuildMachine();});rb.append(s);});
+}
+$("#mModel").addEventListener("change",e=>{
+  const m=e.target.value,M=MODELS[m];mcfg.model=m;mcfg.reflector=M.def.reflector;
+  const base=mcfg.rotors.filter(r=>ROTORS[r]&&!["Beta","Gamma"].includes(r)).slice(-3);
+  const three=base.every(r=>M.rotors.includes(r))?base:["I","II","III"];
+  if(M.greek){mcfg.rotors=["Beta",...three];mcfg.rings=[0,...mcfg.rings.slice(-3)];em.pos=[0,...em.pos.slice(-3)];}
+  else{mcfg.rotors=three;mcfg.rings=mcfg.rings.slice(-3);em.pos=em.pos.slice(-3);}
+  rebuildMachine();
+});
+$("#mRefl").addEventListener("change",e=>{mcfg.reflector=e.target.value;rebuildMachine();});
+$("#mRingStyle").addEventListener("change",e=>{ringStyle=e.target.value;renderRotorBay();renderLid();renderCheck&&chk&&renderCheck();});
+
+function buildBoards(){
+  const lb=$("#lampboard"),kb=$("#keyboard"),pb=$("#plugboard");
+  QWERTZ.forEach(row=>{
+    const lr=h("div",{class:"krow"}),kr=h("div",{class:"krow"}),pr=h("div",{class:"krow"});
+    [...row].forEach(L=>{
+      lampEls[L]=h("div",{class:"lamp",text:L});lr.append(lampEls[L]);
+      const k=h("button",{class:"key",text:L,"aria-label":"Key "+L});
+      k.addEventListener("pointerdown",e=>{e.preventDefault();keyDown(L);k.setPointerCapture?.(e.pointerId);});
+      k.addEventListener("pointerup",()=>keyUp());k.addEventListener("pointercancel",()=>keyUp());
+      k.addEventListener("keydown",e=>{if(e.key===" "||e.key==="Enter"){e.preventDefault();if(!e.repeat)keyDown(L);}});
+      k.addEventListener("keyup",e=>{if(e.key===" "||e.key==="Enter")keyUp();});
+      keyEls[L]=k;kr.append(k);
+      const s=h("button",{class:"socket","aria-label":"Plug socket "+L},h("span",{text:L}),h("i"));
+      s.addEventListener("click",()=>socketClick(L));sockEls[L]=s;pr.append(s);
+    });
+    lb.append(lr);kb.append(kr);pb.append(pr);
+  });
+}
+function keyDown(L){
+  if(litLamp)keyUp();
+  if(!tapeIn)tapeStart={...JSON.parse(JSON.stringify(mcfg)),pos:em.pos.slice()};
+  const tr=em.pressTrace(L);litLamp=tr.out;lampEls[tr.out].classList.add("on");keyEls[L].classList.add("down");E3&&E3.press(L,tr.out);
+  tapeIn+=L;tapeOut+=tr.out;updWindows();renderTape();renderTrace(L,tr);
+}
+function keyUp(){E3&&E3.release();if(litLamp){lampEls[litLamp].classList.remove("on");litLamp=null;}Object.values(keyEls).forEach(k=>k.classList.remove("down"));}
+document.addEventListener("keydown",e=>{
+  if($("#tab-enigma").hidden||e.metaKey||e.ctrlKey||e.altKey)return;
+  const t=e.target;if(t.matches?.("input,textarea,select"))return;
+  const L=e.key.toUpperCase();if(L.length===1&&L>="A"&&L<="Z"){e.preventDefault();if(!e.repeat)keyDown(L);}
+});
+document.addEventListener("keyup",e=>{const L=e.key.toUpperCase();if(L.length===1&&L>="A"&&L<="Z")keyUp();});
+function renderTape(){$("#tapeIn").textContent=groups(tapeIn);$("#tapeOut").textContent=groups(tapeOut);}
+function renderTrace(L,tr){
+  const n=mcfg.rotors.length;const names=n===4?["Greek","Left","Middle","Right"]:["Left","Middle","Right"];
+  const box=$("#trace");box.innerHTML="";
+  box.append(h("span",{},"Key ",h("b",{text:L})));
+  tr.st.forEach(([name,c,rev])=>{
+    let label=name==="plug"?"Plugboard":name==="UKW"?"Reflector":names[mcfg.rotors.indexOf(name)]+" "+name;
+    box.append(h("em",{text:"→"}),h("span",{class:rev?"rev":""},label+" ",h("b",{text:chr(c)})));
+  });
+  box.append(h("em",{text:"→"}),h("span",{},"Lamp ",h("b",{text:tr.out})));
+}
+$("#tapeClear").addEventListener("click",()=>{tapeIn=tapeOut="";tapeStart=null;renderTape();$("#trace").innerHTML="<em>Press a key.</em>";});
+
+/* plugboard */
+const CABLE_COLS=["#C9A15A","#9DB8C8","#C98B7A","#A8C49A","#C7B3D6","#D9C27A","#8FB7A8","#D69AA6","#B0A58E","#9AA7D6","#C4C4B4","#D8A86A","#8AC0C8"];
+function pairsOf(pl){return (pl||"").trim().split(/\s+/).filter(p=>p.length===2);}
+function renderPlugs(){
+  const pm=plugMap(mcfg.plugs);Object.entries(sockEls).forEach(([L,s])=>{s.classList.toggle("used",pm[idx(L)]!==idx(L));s.classList.toggle("sel",plugSel===L);});
+  $("#plugText").value=mcfg.plugs;const n=pairsOf(mcfg.plugs).length;$("#plugCount").textContent=n+(n===1?" cable":" cables")+(n>10?" (Army standard was 10)":"");
+  drawCables();E3&&E3.setPlugs(pairsOf(mcfg.plugs),plugSel);
+}
+function drawCables(){
+  const svg=$("#cables"),box=$("#plugboard");if(!box.offsetWidth)return;svg.innerHTML="";
+  const br=box.getBoundingClientRect();svg.setAttribute("viewBox",`0 0 ${br.width} ${br.height}`);svg.setAttribute("width",br.width);svg.setAttribute("height",br.height);
+  pairsOf(mcfg.plugs).forEach((p,i)=>{
+    const a=sockEls[p[0]].querySelector("i").getBoundingClientRect(),b=sockEls[p[1]].querySelector("i").getBoundingClientRect();
+    const x1=a.left+a.width/2-br.left,y1=a.top+a.height/2-br.top,x2=b.left+b.width/2-br.left,y2=b.top+b.height/2-br.top;
+    const sag=26+Math.abs(x1-x2)*.12;
+    sv("path",{d:`M${x1},${y1} C${x1},${y1+sag} ${x2},${y2+sag} ${x2},${y2}`,stroke:"#000",fill:"none","stroke-width":6,"stroke-linecap":"round",opacity:.6},svg);
+    sv("path",{d:`M${x1},${y1} C${x1},${y1+sag} ${x2},${y2+sag} ${x2},${y2}`,stroke:CABLE_COLS[i%13],fill:"none","stroke-width":3.5,"stroke-linecap":"round"},svg);
+  });
+}
+window.addEventListener("resize",()=>requestAnimationFrame(drawCables));
+function socketClick(L){
+  let pairs=pairsOf(mcfg.plugs);const has=pairs.find(p=>p.includes(L));
+  if(has){pairs=pairs.filter(p=>p!==has);plugSel=null;}
+  else if(!plugSel){plugSel=L;}
+  else if(plugSel===L){plugSel=null;}
+  else{if(pairs.length>=13){plugSel=null;}else pairs.push(plugSel+L);plugSel=null;}
+  mcfg.plugs=pairs.join(" ");em.pb=plugMap(mcfg.plugs);em.cfg.plugs=mcfg.plugs;renderPlugs();
+}
+function cleanPairs(txt){const used=new Set();const out=[];letters(txt).match(/.{2}/g)?.forEach(p=>{if(p[0]!==p[1]&&!used.has(p[0])&&!used.has(p[1])&&out.length<13){used.add(p[0]);used.add(p[1]);out.push(p);}});return out.join(" ");}
+$("#plugApply").addEventListener("click",()=>{mcfg.plugs=cleanPairs($("#plugText").value);em.pb=plugMap(mcfg.plugs);em.cfg.plugs=mcfg.plugs;renderPlugs();});
+$("#plugClear").addEventListener("click",()=>{mcfg.plugs="";em.pb=plugMap("");em.cfg.plugs="";plugSel=null;renderPlugs();});
+
+/* text prep */
+const NUMS=["NULL","EINS","ZWO","DREI","VIER","FUENF","SECHS","SIEBEN","ACHT","NEUN"];
+function prepGerman(s,useQ,useX){
+  s=s.toUpperCase().replace(/Ä/g,"AE").replace(/Ö/g,"OE").replace(/Ü/g,"UE").replace(/ß/g,"SS");
+  s=s.replace(/[0-9]/g,d=>" "+NUMS[d]+" ").replace(/\s*[.!?]\s*/g," X ").replace(/[,;:]/g," ");
+  if(useQ)s=s.replace(/CH/g,"Q");
+  s=s.trim().replace(/[^A-Z\s]/g,"");
+  s=useX?s.replace(/\s+/g,"X"):s.replace(/\s+/g,"");
+  return s.replace(/X+$/,"X");
+}
+$("#prepBtn").addEventListener("click",()=>{$("#bulkText").value=prepGerman($("#bulkText").value,$("#prepQ").checked,$("#prepX").checked);});
+$("#bulkRun").addEventListener("click",()=>{
+  const t=letters($("#bulkText").value);if(!t)return;
+  if(!tapeIn)tapeStart={...JSON.parse(JSON.stringify(mcfg)),pos:em.pos.slice()};
+  let last;for(const L of t){last=em.pressTrace(L);tapeIn+=L;tapeOut+=last.out;}
+  updWindows();renderTape();renderTrace(t.at(-1),last);keyUp();lampEls[last.out].classList.add("on");litLamp=last.out;setTimeout(keyUp,400);
+});
+
+/* =====================================================
+   2. INTERCEPTS (built by encrypting on the replica)
+   ===================================================== */
+const EXDEF=[
+ {id:"wetter",title:"Weather report",level:"Easy",net:"Air Force weather network",from:"Wetterstelle Brest",to:"Luftflotte 3",time:"0605",
+  day:{date:"14",rotors:["III","I","V"],rings:"FKW",plugs:"AK BZ CV EL FS GP HQ IX JU MR",refl:"B",kenn:["RGW","TXL","AKM","DUQ"]},grund:"HRB",key:"NDH",kp:"QM",kidx:0,
+  plain:"WETTERVORHERSAGEXFUERXRAUMXBISKAYAXXBEWOELKUNGXSIEBENXZEHNTELXWINDXNORDWESTXSTAERKEXVIERXSIQTXGUTXXLUFTDRUQKXFALLENDX",
+  crib:"WETTERVORHERSAGE",cribPos:0,
+  intel:"This station sends a forecast every morning at 06:00, and every one so far has begun WETTERVORHERSAGE (\"weather forecast\"). Put the crib at the very start.",
+  english:"Weather forecast for the Biscay area. Cloud cover seven tenths. Wind north-west, strength four. Visibility good. Air pressure falling."},
+ {id:"tages",title:"Daily situation report",level:"Medium",net:"Army, eastern front",from:"Infanterie-Regiment 12",to:"Division",time:"1830",
+  day:{date:"22",rotors:["II","IV","I"],rings:"MTC",plugs:"AO BW CT DY EI FN GQ HR JX KS",refl:"B",kenn:["PLV","WEN","OZK","FHA"]},grund:"UOX",key:"QLV",kp:"BY",kidx:2,
+  plain:"TAGESMELDUNGXABSCHNITTXNORDXKEINEBESONDERENEREIGNISSEXFEINDLIQEXARTILLERIEXSQWAQXEIGENEXVERLUSTEXKEINEXXOBERSTXHEINRIQS",
+  crib:"KEINEBESONDERENEREIGNISSE",cribPos:null,
+  intel:"This regiment's evening report almost always says KEINEBESONDERENEREIGNISSE (\"nothing special to report\"), somewhere in the first 40 letters. Where exactly is up to you. The crib is 25 letters long, which is longer than a menu can safely be.",
+  english:"Daily report. Northern sector. Nothing special to report. Enemy artillery weak. Own losses none. Colonel Heinrichs."},
+ {id:"funk",title:"Signal to High Command",level:"Hard",net:"Army supply network",from:"Nachschubkommandantur",to:"OKW Berlin",time:"1115",
+  day:{date:"03",rotors:["V","III","II"],rings:"DQO",plugs:"AR BK CM DG EY FV HX IN JP LU",refl:"B",kenn:["SNE","KBT","MOY","GRU"]},grund:"ZSE",key:"GWH",kp:"LD",kidx:1,
+  plain:"ANXOBERKOMMANDOXDERXWEHRMAQTXXEINTREFFENXDERXNAQSCHUBKOLONNEXVERZOEGERTXUMXZWEIXSTUNDENXXBRUECKEXBEIXKILOMETERXACHTXZERSTOERTX",
+  crib:"OBERKOMMANDOXDERXWEHRMAQT",cribPos:null,
+  intel:"Signals from this station to Berlin open with the address ANXOBERKOMMANDOXDERXWEHRMAQT (\"To the High Command of the Wehrmacht\"). The first word, AN, is too short to be useful, so the crib starts at OBERKOMMANDO, somewhere in the first few letters.",
+  english:"To the High Command of the Wehrmacht. Arrival of the supply column delayed by two hours. Bridge at kilometre eight destroyed."}
+];
+const MSGS=[];
+function buildMessage(d){
+  const day=d.day;const cfg={reflector:day.refl,rotors:day.rotors,rings:[...day.rings].map(idx),pos:[...d.grund].map(idx),plugs:day.plugs};
+  const encKey=new Enigma(cfg).run(d.key);
+  const ct=new Enigma({...cfg,pos:[...d.key].map(idx)}).run(d.plain);
+  const kenn=d.kp+day.kenn[d.kidx];
+  return {...d,ct,encKey,kenn,len:ct.length+5};
+}
+EXDEF.forEach(d=>MSGS.push(buildMessage(d)));
+/* Genuine wartime messages, published with their keys. Ciphertext is used exactly as published. */
+const BARB_CT="EDPUDNRGYSZRCXNUYTPOMRMBOFKTBZREZKMLXLVEFGUEYSIOZVEQMIKUBPMMYLKLTTDEISMDICAGYKUACTCDOMOHWXMUUIAUBSTSLRNBZSZWNRFXWFYSSXJZVIJHIDISHPRKLKAYUPADTXQSPINQMATLPIFSVKDASCTACDPBOPVHJK";
+MSGS.push({id:"barbarossa",historical:true,title:"Operation Barbarossa, 7 July 1941",level:"Historical",net:"Army, Russian front",from:"SS Panzer Regiment 3",to:"(situation report)",
+  day:{rotors:["II","IV","V"],rings:"BUL",plugs:"AV BS CG DL FU HZ IN KM OW RX",refl:"B"},model:"I",grund:"WXC",encKey:"KCH",key:"BLA",kenn:"",
+  headerText:"Part 1 · 179 letters incl. Kenngruppe · WXC KCH =",
+  ct:BARB_CT,plain:new Enigma({reflector:"B",rotors:["II","IV","V"],rings:[1,20,11],pos:[1,11,0],plugs:"AV BS CG DL FU HZ IN KM OW RX"}).run(BARB_CT),
+  crib:"KURTINOWAXKURTINOWAX",cribPos:null,
+  intel:"A real intercept. German operators wrote important place names twice to guard against garbling, and this unit was reporting from around Kurtinowa. Try KURTINOWAXKURTINOWAX in the first 30 letters. The middle rotor steps inside it, so you'll need to trim the menu.",
+  english:"Reconnaissance battalion from Kurtinowa, north-west of Sebezh, on the flight road towards Dubrowki and Opochka, moved off at 18:30. Infantry regiment attacking.",
+  source:{name:"Franklin Heath: Enigma sample messages (from Sullivan & Weierud)",url:"https://wiki.franklinheath.co.uk/index.php/Enigma/Sample_Messages"}});
+const DONITZ_CT="LANOTCTOUARBBFPMHPHGCZXTDYGAHGUFXGEWKBLKGJWLQXXTGPJJAVTOCKZFSLPPQIHZFXOEBWIIEKFZLCLOAQJULJOYHSSMBBGWHZANVOIIPYRBRTDJQDJJOQKCXWDNBBTYVXLYTAPGVEATXSONPNYNQFUDBBHHVWEPYEYDOHNLXKZDNWRHDUWUJUMWWVIIWZXIVIUQDRHYMNCYEFUAPNHOTKHKGDNPSAKNUAGHJZSMJBMHVTREQEDGXHLZWIFUSKDQVELNMIMITHBHDBWVHDFYHJOQIHORTDJDBWXEMEAYXGYQXOHFDMYUXXNOJAZRSGHPLWMLRECWWUTLRTTVLBHYOORGLGOWUXNXHMHYFAACQEKTHSJW";
+MSGS.push({id:"donitz",historical:true,m4:true,title:"Dönitz succession, 1 May 1945",level:"Historical · M4",net:"Navy, U-boat key",from:"Commander-in-Chief Navy",to:"All (via U-boat command)",
+  day:{rotors:["Beta","V","VI","VIII"],rings:"EPEL",plugs:"AE BF CM DQ HU JN LX PR SZ VW",refl:"C-thin"},model:"M4",grund:"NAEM",encKey:"QEOB",key:"CDSZ",kenn:"DUHF TETO",
+  headerText:"Indicator DUHF TETO (repeated at the end) → QEOB",
+  ct:DONITZ_CT,plain:new Enigma({reflector:"C-thin",rotors:["Beta","V","VI","VIII"],rings:[4,15,4,11],pos:[2,3,18,25],plugs:"AE BF CM DQ HU JN LX PR SZ VW"}).run(DONITZ_CT),
+  intel:"A real message recovered from U-534, announcing that Hitler had named Grand Admiral Dönitz as his successor. It was sent on the four-rotor naval Enigma, which the British three-rotor Bombe couldn't attack, so decode it on the replica using its published key. The Navy wrote in groups of four letters.",
+  english:"War emergency message to all: I have received the following order. In place of the former Reichsmarschall Göring, the Führer appoints you, Herr Grossadmiral, as his successor. Written authority on its way. With immediate effect you are to order all measures required by the present situation. Signed Reichsleiter Bormann.",
+  source:{name:"Crypto Museum: Enigma M4 message P1030681",url:"https://www.cryptomuseum.com/crypto/enigma/msg/p1030681.htm"}});
+
+function renderForms(){
+  const box=$("#forms");box.innerHTML="";
+  MSGS.forEach(m=>{
+    const ks=h("div",{class:"keysheet",hidden:""},
+      h("div",{class:"stamp",text:"GEHEIM!"}),
+      h("div",{text:m.custom?"Your key":m.historical?"Published key for this message":`Maschinenschlüssel · Datum ${m.day.date}`}),
+      h("table",{},h("tr",{},h("th",{text:"Walzenlage"}),h("th",{text:"Ringstellung"}),h("th",{text:"Steckerverbindungen"}),h("th",{text:"UKW"})),
+        h("tr",{},h("td",{text:m.day.rotors.join(" ")}),h("td",{text:[...m.day.rings].map(r=>String(idx(r)+1).padStart(2,"0")).join(" ")+" ("+m.day.rings+")"}),h("td",{text:m.day.plugs||"none"}),h("td",{text:m.day.refl}))),
+      h("div",{text:`Message key used: ${m.key}${m.day.kenn?" · Kenngruppen: "+m.day.kenn.join(" "):""}`}));
+    const f=h("article",{class:"form"},
+      h("div",{class:"fhead"},h("b",{text:m.title}),h("span",{class:"level",text:m.level})),
+      h("div",{class:"kv"},
+        h("span",{text:"Network"}),h("span",{text:m.net}),
+        h("span",{text:"From / to"}),h("span",{text:`${m.from} → ${m.to}`}),
+        h("span",{text:"Header"}),h("span",{text:m.headerText||(m.custom?`${m.time} = ${m.len} =`:`${m.time} = 1TL = ${m.len} = ${m.grund} ${m.encKey} =`)}),
+      ),
+      h("div",{class:"groups",text:m.m4?`${m.kenn} ${groups(m.ct,4)} ${m.kenn}`:(m.kenn?m.kenn+" ":"")+groups(m.ct)}),
+      h("div",{class:"intel"},h("strong",{text:"What Hut 6 knows: "}),m.intel),
+      m.source?h("div",{class:"small"},"Source: ",h("a",{href:m.source.url,target:"_blank",rel:"noopener",style:"color:#2C5A75",text:m.source.name})):null,
+      h("div",{class:"row"},
+        m.m4?null:h("button",{text:"Work on this message →",onclick:()=>{selectMessage(m.id);showTab("menu");}}),
+        m.historical?h("button",{class:m.m4?"":"ghost",text:"Decode it on the Enigma",onclick:()=>decodeOnEnigma(m)}):null,
+        h("button",{class:"ghost",text:"Show German key sheet",onclick:e=>{ks.hidden=!ks.hidden;e.target.textContent=ks.hidden?"Show German key sheet":"Hide key sheet";}})),
+      ks);
+    box.append(f);
+  });
+  const sel=$("#msgSel");const cur=sel.value;sel.innerHTML="";MSGS.filter(m=>!m.m4).forEach(m=>sel.append(h("option",{value:m.id,text:`${m.title} (${m.level})`})));if(cur)sel.value=cur;
+  const q=$("#chkQuick");q.innerHTML="";
+}
+
+
+function decodeOnEnigma(m){
+  const d=m.day;mcfg={model:m.model||"I",reflector:d.refl,rotors:d.rotors.slice(),rings:[...d.rings].map(idx),pos:[...m.grund].map(idx),plugs:d.plugs};
+  em=new Enigma(mcfg);plugSel=null;rebuildMachine(false);tapeIn=tapeOut="";tapeStart=null;renderTape();
+  $("#bulkText").value=m.encKey;
+  const note=$("#enigmaNote");note.hidden=false;note.innerHTML="";
+  note.append(h("strong",{text:m.title+". "}),`The machine is set to the published key, with the windows at the Grundstellung ${m.grund}. Step 1: press "Type it on the machine" to type the encrypted message key ${m.encKey}. The lamps should spell ${m.key}.`,
+    h("div",{class:"row",style:"margin-top:8px"},h("button",{class:"primary",text:`Step 2: set the windows to ${m.key} and load the message`,onclick:()=>{em.pos=[...m.key].map(idx);updWindows();tapeIn=tapeOut="";tapeStart=null;renderTape();$("#bulkText").value=m.m4?groups(m.ct,4):groups(m.ct);
+      note.lastChild.replaceWith(h("div",{style:"margin-top:8px"},`Windows at ${m.key}. Press "Type it on the machine" and read the lamps. `,h("em",{text:"In English: "}),m.english));}})));
+  showTab("enigma");
+}
+/* custom challenge from the Enigma pad */
+$("#makeChallenge").addEventListener("click",()=>{
+  if(tapeIn.length<20||!tapeStart){$("#makeChallenge").textContent="Type at least 20 letters on the machine first";return;}
+  if(tapeStart.rotors.length!==3){$("#makeChallenge").textContent="The British Bombe attacked 3-rotor machines. Switch to Enigma I or M3.";return;}
+  const n=MSGS.filter(m=>m.custom).length+1;
+  const m={id:"custom"+n,custom:true,title:`Your message ${n}`,level:"Custom",net:"Your own network",from:"You",to:"Bletchley",time:"----",
+    day:{rotors:tapeStart.rotors,rings:tapeStart.rings.map(chr).join(""),plugs:tapeStart.plugs,refl:tapeStart.reflector},key:tapeStart.pos.map(chr).join(""),
+    plain:tapeIn,ct:tapeOut,crib:tapeIn.slice(0,Math.min(16,tapeIn.length)),cribPos:0,kenn:"",len:tapeOut.length,
+    intel:`You know the message starts ${tapeIn.slice(0,Math.min(16,tapeIn.length))}. Try that as the crib at position 1.`,english:"(your own message)"};
+  MSGS.push(m);renderForms();selectMessage(m.id);showTab("menu");
+});
+
+/* =====================================================
+   3. CRIB & MENU
+   ===================================================== */
+let cur={msg:null,crib:"",pos:0,use:[],test:null};
+function selectMessage(id){
+  const m=MSGS.find(x=>x.id===id);cur.msg=m;$("#msgSel").value=id;
+  cur.crib=m.crib;$("#cribIn").value=m.crib;cur.pos=m.cribPos??0;cur.use=[...m.crib].map(()=>true);cur.test=null;
+  $("#msgIntel").innerHTML="";$("#msgIntel").append(h("strong",{text:"Intelligence: "}),m.intel);
+  renderCrib();
+}
+$("#msgSel").addEventListener("change",e=>selectMessage(e.target.value));
+$("#cribIn").addEventListener("input",e=>{cur.crib=letters(e.target.value);cur.use=[...cur.crib].map(()=>true);cur.test=null;renderCrib();});
+const clashes=(o)=>{const ct=cur.msg.ct;const out=[];for(let i=0;i<cur.crib.length;i++)if(ct[o+i]===cur.crib[i])out.push(i);return out;};
+function renderCrib(){
+  const m=cur.msg,ct=m.ct,cr=cur.crib;const max=Math.max(0,ct.length-cr.length);
+  const rng=$("#cribPos");rng.max=max;if(cur.pos>max)cur.pos=max;rng.value=cur.pos;
+  const bad=clashes(cur.pos);
+  const tape=$("#ctape");tape.innerHTML="";tape.style.gridTemplateColumns=`repeat(${ct.length},24px)`;
+  for(let i=0;i<ct.length;i++){const k=i-cur.pos;const d=h("div",{class:"c i",text:(i+1)%5===0?i+1:""});d.style.gridRow=1;d.style.gridColumn=i+1;tape.append(d);
+    const c=h("div",{class:"c ct"+(k>=0&&k<cr.length&&bad.includes(k)?" ctclash":""),text:ct[i]});c.style.gridRow=2;c.style.gridColumn=i+1;tape.append(c);
+    if(k>=0&&k<cr.length){const e=h("div",{class:"c cr"+(bad.includes(k)?" clash":"")+(cur.use[k]?"":" off"),text:cr[k]});e.style.gridRow=3;e.style.gridColumn=i+1;tape.append(e);}
+  }
+  const v=$("#cribVerdict");
+  if(!cr.length){v.className="verdict no";v.textContent="Type a crib.";}
+  else if(bad.length){v.className="verdict no";v.textContent=`Position ${cur.pos+1}: impossible. ${bad.map(k=>cr[k]+" on "+ct[cur.pos+k]).join(", ")}: Enigma never encrypts a letter to itself.`;}
+  else{const okAll=[...Array(max+1).keys()].filter(o=>!clashes(o).length).length;v.className="verdict ok";v.textContent=`Position ${cur.pos+1}: possible. No letter sits on itself. (${okAll} of ${max+1} positions pass this test.)`;}
+  renderToggles();renderMenu();
+}
+$("#cribPos").addEventListener("input",e=>{cur.pos=+e.target.value;renderCrib();});
+function jump(dir){const max=+$("#cribPos").max;let o=cur.pos;for(let n=0;n<=max;n++){o=(o+dir+max+1)%(max+1);if(!clashes(o).length)break;}cur.pos=o;renderCrib();}
+$("#cribNext").addEventListener("click",()=>jump(1));$("#cribPrev").addEventListener("click",()=>jump(-1));
+function renderToggles(){
+  const t=$("#toggles");t.innerHTML="";
+  [...cur.crib].forEach((L,k)=>{const b=h("button",{class:cur.use[k]?"on":"","aria-pressed":cur.use[k],title:`Crib letter ${k+1}`},L,h("small",{text:k+1}));b.addEventListener("click",()=>{cur.use[k]=!cur.use[k];cur.test=null;renderCrib();});t.append(b);});
+}
+$("#useAll").addEventListener("click",()=>{cur.use=cur.use.map(()=>true);cur.test=null;renderCrib();});
+$("#useFirst").addEventListener("click",()=>{cur.use=cur.use.map((_,k)=>k<14);cur.test=null;renderCrib();});
+$("#useLast").addEventListener("click",()=>{const n=cur.use.length;cur.use=cur.use.map((_,k)=>k>=n-14);cur.test=null;renderCrib();});
+
+function currentMenu(){
+  const ct=cur.msg.ct,cr=cur.crib;const edges=[];
+  for(let k=0;k<cr.length;k++){if(!cur.use[k])continue;const c=ct[cur.pos+k];if(!c||c===cr[k])continue;edges.push({k,a:idx(cr[k]),b:idx(c)});}
+  return edges;
+}
+function analyse(edges){
+  const nodes=[...new Set(edges.flatMap(e=>[e.a,e.b]))];
+  // components
+  const par={};nodes.forEach(n=>par[n]=n);const f=x=>par[x]===x?x:(par[x]=f(par[x]));edges.forEach(e=>{par[f(e.a)]=f(e.b);});
+  const comps=new Set(nodes.map(f)).size;const loops=edges.length-nodes.length+comps;
+  // bridges (Tarjan on multigraph)
+  const adj={};nodes.forEach(n=>adj[n]=[]);edges.forEach((e,i)=>{adj[e.a].push([e.b,i]);adj[e.b].push([e.a,i]);});
+  const tin={},low={};let t=0;const bridge=new Set();
+  const dfs=(v,pe)=>{tin[v]=low[v]=t++;for(const[u,i]of adj[v]){if(i===pe)continue;if(tin[u]!=null)low[v]=Math.min(low[v],tin[u]);else{dfs(u,i);low[v]=Math.min(low[v],low[u]);if(low[u]>tin[v])bridge.add(i);}}};
+  nodes.forEach(n=>{if(tin[n]==null)dfs(n,-1);});
+  const deg={};nodes.forEach(n=>deg[n]=0);edges.forEach(e=>{deg[e.a]++;deg[e.b]++;});
+  // loops through each node
+  const inLoop={};edges.forEach((e,i)=>{if(!bridge.has(i)){inLoop[e.a]=(inLoop[e.a]||0)+1;inLoop[e.b]=(inLoop[e.b]||0)+1;}});
+  const best=[...nodes].sort((x,y)=>((inLoop[y]||0)-(inLoop[x]||0))||(deg[y]-deg[x]))[0];
+  return {nodes,comps,loops,bridge,deg,best};
+}
+function layout(nodes,edges,W,H){
+  let s=7;const rnd=()=>{s=(s*16807)%2147483647;return s/2147483647;};
+  const P={};nodes.forEach((n,i)=>{const a=i/nodes.length*Math.PI*2;P[n]={x:W/2+Math.cos(a)*W*.3+rnd()*10,y:H/2+Math.sin(a)*H*.3+rnd()*10,vx:0,vy:0};});
+  const k=Math.sqrt(W*H/Math.max(1,nodes.length))*.62;
+  for(let it=0;it<400;it++){
+    const temp=1-it/400;
+    nodes.forEach(a=>{P[a].fx=0;P[a].fy=0;});
+    for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){const A=P[nodes[i]],B=P[nodes[j]];let dx=A.x-B.x,dy=A.y-B.y;const d=Math.max(1,Math.hypot(dx,dy));const f=k*k/d;dx/=d;dy/=d;A.fx+=dx*f;A.fy+=dy*f;B.fx-=dx*f;B.fy-=dy*f;}
+    edges.forEach(e=>{const A=P[e.a],B=P[e.b];let dx=A.x-B.x,dy=A.y-B.y;const d=Math.max(1,Math.hypot(dx,dy));const f=d*d/k;dx/=d;dy/=d;A.fx-=dx*f;A.fy-=dy*f;B.fx+=dx*f;B.fy+=dy*f;});
+    nodes.forEach(n=>{const p=P[n];p.fx+=(W/2-p.x)*.02*k;p.fy+=(H/2-p.y)*.02*k;const d=Math.hypot(p.fx,p.fy)||1;const step=Math.min(d,18*temp+1);p.x+=p.fx/d*step;p.y+=p.fy/d*step;});
+  }
+  // fit
+  const xs=nodes.map(n=>P[n].x),ys=nodes.map(n=>P[n].y);const minx=Math.min(...xs),maxx=Math.max(...xs),miny=Math.min(...ys),maxy=Math.max(...ys);
+  const sc=Math.min((W-80)/Math.max(1,maxx-minx),(H-80)/Math.max(1,maxy-miny),2.2);
+  nodes.forEach(n=>{P[n].x=W/2+(P[n].x-(minx+maxx)/2)*sc;P[n].y=H/2+(P[n].y-(miny+maxy)/2)*sc;});
+  return P;
+}
+function renderMenu(){
+  const svg=$("#menuSvg");svg.innerHTML="";const W=640,H=420;
+  const edges=currentMenu();
+  if(!edges.length){sv("text",{x:W/2,y:H/2,"text-anchor":"middle",fill:"#9AA59E","font-size":14},svg,"No usable letters in the menu.");$("#menuStats").innerHTML="";$("#toBombe").disabled=true;return;}
+  $("#toBombe").disabled=!!clashes(cur.pos).length;
+  const A=analyse(edges);if(cur.test==null||!A.nodes.includes(cur.test))cur.test=A.best;
+  const P=layout(A.nodes,edges,W,H);
+  const k0=Math.min(...edges.map(e=>e.k));
+  // group parallel edges
+  const pairCount={};edges.forEach((e,i)=>{const key=[e.a,e.b].sort().join("-");(pairCount[key]=pairCount[key]||[]).push(i);});
+  edges.forEach((e,i)=>{
+    const a=P[e.a],b=P[e.b];const key=[e.a,e.b].sort().join("-");const grp=pairCount[key];const gi=grp.indexOf(i);const off=(gi-(grp.length-1)/2)*44;
+    const mx=(a.x+b.x)/2,my=(a.y+b.y)/2;const dx=b.x-a.x,dy=b.y-a.y;const L=Math.hypot(dx,dy)||1;const nx=-dy/L,ny=dx/L;
+    const cx=mx+nx*off*(e.a<e.b?1:-1),cy=my+ny*off*(e.a<e.b?1:-1);
+    const hot=!A.bridge.has(i);
+    sv("path",{d:`M${a.x},${a.y} Q${cx},${cy} ${b.x},${b.y}`,fill:"none",stroke:hot?"#F2A93B":"#5A6660","stroke-width":hot?3.5:2},svg);
+    const lx=(a.x+2*cx+b.x)/4,ly=(a.y+2*cy+b.y)/4;
+    sv("rect",{x:lx-13,y:ly-10,width:26,height:20,rx:10,fill:"#171D1A",stroke:hot?"#F2A93B":"#2E3833"},svg);
+    sv("text",{x:lx,y:ly+4.5,"text-anchor":"middle","font-size":12,fill:"#E4E8E3","font-weight":600},svg,String(e.k-k0+1));
+  });
+  A.nodes.forEach(n=>{const p=P[n];const t=n===cur.test;
+    sv("circle",{cx:p.x,cy:p.y,r:t?21:17,fill:t?"#F2A93B":"#1E2622",stroke:t?"#F2A93B":"#6F7A74","stroke-width":2},svg);
+    sv("text",{x:p.x,y:p.y+6,"text-anchor":"middle","font-size":t?18:16,"font-weight":600,fill:t?"#1A1407":"#E4E8E3"},svg,chr(n));
+  });
+  // stats
+  const st=$("#menuStats");st.innerHTML="";
+  [["Links",edges.length],["Letters",A.nodes.length],["Loops",A.loops],["Pieces",A.comps]].forEach(([l,v])=>st.append(h("div",{class:"stat"},h("b",{text:v}),h("span",{text:l}))));
+  const ts=$("#testSel");ts.innerHTML="";A.nodes.forEach(n=>ts.append(h("option",{value:n,text:chr(n)+`  (${A.deg[n]} links)`})));ts.value=cur.test;
+  const adv=$("#menuAdvice");const n=edges.length;
+  adv.className="note"+(A.loops>=3&&n<=16?" good":(A.loops<1?" bad":""));
+  adv.textContent=A.loops>=3?(n>16?`${A.loops} loops: good. But ${n} links is long, and the middle rotor has a good chance of stepping inside the menu. Try the First 14 or Last 14 buttons if the Bombe finds nothing.`:`${A.loops} loops from ${n} links: a good menu. Expect only a few stops per wheel order with the diagonal board.`)
+    :A.loops===2?"2 loops: usable. Expect a few false stops per wheel order with the diagonal board, many more without it."
+    :A.loops===0?"No loops: nothing can contradict a guess, so the Bombe would stop everywhere. Use a longer crib or a different part of it.":"Only 1 loop: a weak menu. With the diagonal board you can still expect one or two stops per wheel order, most of them false. Without it, hundreds.";
+}
+$("#testSel").addEventListener("change",e=>{cur.test=+e.target.value;renderMenu();});
+$("#toBombe").addEventListener("click",()=>{loadBombe();showTab("bombe");});
+
+/* =====================================================
+   4. BOMBE
+   ===================================================== */
+let B=null; // {msg,menu,base,test,input,letters}
+let realTimer=null,bStops=[],bSel=null,tblCache={};
+const stackEls=[];
+function buildFace(){
+  const svg=$("#bombeSvg");svg.innerHTML="";
+  sv("rect",{x:0,y:0,width:760,height:440,fill:"#0A0C0B"},svg);
+  for(let bank=0;bank<3;bank++){
+    const by=10+bank*142;sv("rect",{x:6,y:by,width:748,height:134,rx:4,fill:"#161B18",stroke:"#262E2A"},svg);
+    sv("text",{x:14,y:by+14,"font-size":9,fill:"#6F7A74"},svg,["BANK 1","BANK 2","BANK 3"][bank]);
+    for(let col=0;col<12;col++){
+      const cx=46+col*61;const g=sv("g",{},svg);const drums=[];
+      ["dr-fast","dr-mid",""].forEach((cls,row)=>{
+        const cy=by+30+row*33;
+        const dg=sv("g",{},g);
+        sv("circle",{cx,cy,r:14,fill:"#6E7A74",stroke:"#48524D","stroke-width":2},dg);
+        const ring=sv("g",{class:cls},dg);for(let t=0;t<26;t+=2){const a=t/26*Math.PI*2;sv("line",{x1:cx+Math.cos(a)*10,y1:cy+Math.sin(a)*10,x2:cx+Math.cos(a)*13,y2:cy+Math.sin(a)*13,stroke:"#2A302D","stroke-width":1.2},ring);}
+        sv("circle",{cx,cy,r:3,fill:"#2A302D"},dg);
+        const tx=sv("text",{x:cx+19,y:cy+4,"font-size":10,fill:"#C9D0CB"},dg,"");
+        drums.push({tx,dg});
+      });
+      const lab=sv("text",{x:cx,y:by+126,"text-anchor":"middle","font-size":10,fill:"#6F7A74"},g,"");
+      stackEls.push({g,drums,lab});
+    }
+  }
+}
+function loadBombe(){
+  const edges=currentMenu();const k0=Math.min(...edges.map(e=>e.k));
+  const menu=edges.map(e=>({k:e.k-k0,a:e.a,b:e.b,ck:e.k}));
+  const lettersSet=[...new Set(menu.flatMap(e=>[e.a,e.b]))];
+  B={msg:cur.msg,menu,base:cur.pos+k0,test:cur.test,input:cur.test===0?1:0,letters:lettersSet,crib:cur.crib,cribPos:cur.pos,k0};
+  stopAll();bStops=[];bSel=null;renderStops();
+  const bt=$("#bTest");bt.innerHTML="";lettersSet.sort((a,b)=>a-b).forEach(n=>bt.append(h("option",{value:n,text:chr(n)})));bt.value=B.test;
+  const bi=$("#bInput");bi.innerHTML="";for(let i=0;i<26;i++)bi.append(h("option",{value:i,text:"wire "+chr(i)}));bi.value=B.input;
+  stackEls.forEach((s,i)=>{const e=menu[i];s.g.setAttribute("opacity",e?1:.28);s.lab.textContent=e?`${chr(e.a)}·${chr(e.b)} +${e.k}`:"";s.lab.setAttribute("fill",e?"#F2A93B":"#6F7A74");s.drums.forEach(d=>d.tx.textContent=e?"A":"");});
+  B3&&B3.setMenu(menu);
+  setPos("I II III".split(" "),0,0,0);
+  showRegister(null);$("#bProg").style.width="0";renderBStats(0,0,0);
+  $("#stopNote").innerHTML="";
+}
+function orderPick(){
+  const box=$("#bOneOrder");box.innerHTML="";const def=["I","II","III"];
+  for(let i=0;i<3;i++){const s=h("select",{"aria-label":`Wheel ${i+1}`,id:"bo"+i});["I","II","III","IV","V"].forEach(o=>s.append(h("option",{value:o,text:o})));s.value=def[i];box.append(s);}
+}
+function chosenOrders(){if($("#bWhich").value==="all")return allOrders(["I","II","III","IV","V"]);const o=[0,1,2].map(i=>$("#bo"+i).value);return new Set(o).size===3?[o]:[];}
+function setPos(order,l,m,r){
+  if(!B)return;B.menu.forEach((e,i)=>{const s=stackEls[i];if(!s)return;s.drums[0].tx.textContent=chr(r+e.k);s.drums[1].tx.textContent=chr(m);s.drums[2].tx.textContent=chr(l);});
+  B3&&B3.setDrums(order,l,m,r);
+  const ind=$("#bIndicator");ind.innerHTML="";ind.append(h("span",{class:"mono small muted",text:order.join("-")}),...[l,m,r].map(v=>h("div",{class:"rwin",text:chr(v)})));
+}
+function buildRegister(){const r=$("#register");r.innerHTML="";for(let i=0;i<26;i++)r.append(h("div",{class:"reg",id:"reg"+i,text:chr(i)}));}
+function showRegister(mask,cand,note){B3&&B3.setRegister(mask,cand);for(let i=0;i<26;i++){const e=$("#reg"+i);e.classList.toggle("on",mask!=null&&!!(mask&(1<<i)));e.classList.toggle("cand",cand===i);}
+  $("#regNote").textContent=note||"The register shows which of the test letter's 26 wires are live.";}
+function renderBStats(pos,orders,ms){
+  const st=$("#bStats");st.innerHTML="";const cons=bStops.filter(s=>s.ok).length;
+  const bombeMin=pos/17576*20;const bt=bombeMin>=60?(bombeMin/60).toFixed(1)+" h":Math.round(bombeMin)+" min";
+  [["Positions",pos.toLocaleString()],["Orders done",orders],["Stops",bStops.length],["Consistent",cons],["Bombe time",bt],["Your time",(ms/1000).toFixed(1)+" s"]].forEach(([l,v])=>st.append(h("div",{class:"stat"},h("b",{text:v}),h("span",{text:l}))));
+}
+function readControls(){B.test=+$("#bTest").value;B.input=+$("#bInput").value;B.diag=$("#bDiag").checked;B.refl=$("#bRefl").value;}
+function stopAll(){workers.forEach(w=>w.terminate());workers=[];if(realTimer){clearInterval(realTimer);realTimer=null;}$("#bombeFace").classList.remove("running");B3&&B3.setRunning(false);$("#bStop").disabled=true;$("#bRun").disabled=$("#bReal").disabled=$("#bStep").disabled=false;}
+function addStop(s){
+  const d=s.pairs?s:{};bStops.push(s);
+  if(bStops.length<=600)renderStops();
+}
+function pairsText(p){const seen=new Set();const out=[];for(const a in p){const b=p[a];if(seen.has(+a))continue;seen.add(+a);seen.add(b);out.push(+a===b?chr(+a)+"·":chr(+a)+"–"+chr(b));}return out;}
+function renderStops(){
+  const tb=$("#stopsBody");tb.innerHTML="";
+  const list=bStops.map((s,i)=>({s,i})).sort((x,y)=>(y.s.ok-x.s.ok)||(x.i-y.i)).slice(0,600);
+  list.forEach(({s,i})=>{
+    const pt=pairsText(s.pairs||{});const real=pt.filter(p=>p.includes("–"));
+    const tr=h("tr",{class:bSel===i?"sel":""},
+      h("td",{text:i+1}),h("td",{text:s.order.join("-")}),h("td",{text:chr(s.l)+chr(s.m)+chr(s.r)}),h("td",{text:s.lit}),
+      h("td",{text:s.cand!=null?chr(B.test)+"–"+chr(s.cand):"?"}),h("td",{text:real.join(" ")+(pt.length>real.length?`  (+${pt.length-real.length} self)`:"")}),
+      h("td",{},h("span",{class:"pill "+(s.ok?"ok":"no"),text:s.ok?"consistent":"contradiction"})),
+      h("td",{},h("button",{text:"Check →",onclick:ev=>{ev.stopPropagation();loadCheck(s);showTab("check");}})));
+    tr.addEventListener("click",()=>{bSel=i;setPos(s.order,s.l,s.m,s.r);showRegister(s.testMask,s.cand,`Stop ${i+1}: ${s.lit} of 26 wires live. ${s.cand!=null?`${chr(B.test)} is plugged to ${chr(s.cand)} if this stop is right.`:""}`);renderStops();});
+    tb.append(tr);
+  });
+  if(!bStops.length)tb.append(h("tr",{},h("td",{colspan:8,class:"muted",text:"No stops yet."})));
+}
+function workerSource(){return document.getElementById("engine").textContent+`
+onmessage=e=>{const {orders,refl,menu,diag,test,input}=e.data;const eb=edgesByLetter(menu);let pos=0;
+ for(let oi=0;oi<orders.length;oi++){const o=orders[oi];const tbl=scramblerTable(o,refl);let n=0;
+  for(let l=0;l<26;l++){for(let m=0;m<26;m++)for(let r=0;r<26;r++){const mask=flood(tbl,l,m,r,menu,diag,test,input,eb);const lit=popc(mask[test]);
+    if(lit<26){n++;const s={order:o,l,m,r,lit,testMask:mask[test]};if(n<=400){const d=deduce(tbl,s,menu,diag,test);s.cand=d.cand;s.pairs=d.pairs;s.ok=d.ok;}else{s.cand=null;s.pairs={};s.ok=false;}postMessage({type:"stop",s});}}
+   pos+=676;postMessage({type:"prog",oi,l,pos,order:o});}
+ }
+ postMessage({type:"done",pos});};`;}
+let workers=[];
+$("#bRun").addEventListener("click",()=>{
+  if(!B)return;readControls();stopAll();bStops=[];bSel=null;renderStops();
+  const orders=chosenOrders();if(!orders.length){$("#stopNote").innerHTML='<div class="note bad">Pick three different rotors.</div>';return;}
+  const url=URL.createObjectURL(new Blob([workerSource()],{type:"text/javascript"}));
+  const nW=Math.max(1,Math.min(orders.length,(navigator.hardwareConcurrency||4)-1,6));
+  const t0=performance.now();let lastDraw=0;const total=orders.length*17576;let posDone=0,ordersDone=0,finished=0;
+  $("#bombeFace").classList.add("running");B3&&B3.setRunning(true);$("#bStop").disabled=false;$("#bRun").disabled=$("#bReal").disabled=$("#bStep").disabled=true;
+  $("#stopNote").innerHTML="";
+  const menu=B.menu.map(({k,a,b})=>({k,a,b}));
+  for(let w=0;w<nW;w++){
+    const part=orders.filter((_,i)=>i%nW===w);const wk=new Worker(url);workers.push(wk);
+    wk.onmessage=e=>{const d=e.data;
+      if(d.type==="stop")addStop(d.s);
+      else if(d.type==="prog"){posDone+=676;if(d.l===25)ordersDone++;$("#bProg").style.width=(posDone/total*100)+"%";const now=performance.now();if(now-lastDraw>120){lastDraw=now;setPos(d.order,d.l,25,25);renderBStats(posDone,ordersDone,now-t0);}}
+      else if(d.type==="done"){if(++finished===nW){stopAll();renderStops();renderBStats(total,orders.length,performance.now()-t0);finishNote();}}
+    };
+    wk.postMessage({orders:part,refl:B.refl,menu,diag:B.diag,test:B.test,input:B.input});
+  }
+});
+function finishNote(){
+  const cons=bStops.filter(s=>s.ok);const box=$("#stopNote");box.innerHTML="";
+  if(!cons.length)box.append(h("div",{class:"note bad",text:"No consistent stop. Most likely the middle rotor turned inside your menu, or the crib is in the wrong place. Go back and try a shorter menu (First 14 or Last 14), or another crib position."}));
+  else box.append(h("div",{class:"note good",text:`${cons.length} consistent stop${cons.length>1?"s":""}. Press Check on ${cons.length>1?"one":"it"} to load it into the checking machine.`}));
+}
+$("#bStop").addEventListener("click",()=>{stopAll();renderStops();});
+// real-time + step on the main thread
+let rt=null;
+function rtInit(){readControls();const orders=chosenOrders();if(!orders.length)return null;const o=orders[0];const key=o.join()+B.refl;
+  if(!tblCache[key])tblCache[key]=scramblerTable(o,B.refl);return {o,tbl:tblCache[key],eb:edgesByLetter(B.menu),p:0,orders};}
+function rtStep(){
+  if(!rt)rt=rtInit();if(!rt)return;
+  const p=rt.p;const l=Math.floor(p/676),m=Math.floor(p/26)%26,r=p%26;
+  const mask=flood(rt.tbl,l,m,r,B.menu,B.diag,B.test,B.input,rt.eb);const lit=popc(mask[B.test]);
+  setPos(rt.o,l,m,r);
+  let note=`Drums ${chr(l)}${chr(m)}${chr(r)}: ${lit} of 26 live. `;
+  if(lit<26){const s={order:rt.o,l,m,r,lit,testMask:mask[B.test]};const d=deduce(rt.tbl,s,B.menu,B.diag,B.test);Object.assign(s,d);addStop(s);note+=`STOP. ${d.cand!=null?`${chr(B.test)}–${chr(d.cand)} is the stecker if this is right.`:""}`;showRegister(mask[B.test],d.cand,note);
+    if(realTimer){clearInterval(realTimer);realTimer=null;$("#bombeFace").classList.remove("running");B3&&B3.setRunning(false);$("#bReal").textContent="Continue at 1940 speed";$("#bReal").disabled=false;$("#bStep").disabled=false;}}
+  else showRegister(mask[B.test],null,note+"Contradiction everywhere. Step on.");
+  rt.p++;$("#bProg").style.width=(rt.p/17576*100)+"%";renderBStats(rt.p,rt.p>=17576?1:0,0);
+  if(rt.p>=17576){clearInterval(realTimer);realTimer=null;stopAll();finishNote();rt=null;}
+}
+$("#bStep").addEventListener("click",()=>{if(!B)return;rtStep();});
+$("#bReal").addEventListener("click",()=>{if(!B)return;if(!rt){bStops=[];renderStops();}
+  $("#bombeFace").classList.add("running");B3&&B3.setRunning(true);$("#bStop").disabled=false;$("#bReal").disabled=$("#bStep").disabled=$("#bRun").disabled=true;
+  realTimer=setInterval(rtStep,1000/14.6);});
+$("#bDiag").addEventListener("change",e=>B3&&B3.setDiag(e.target.checked));
+["bWhich","bRefl","bDiag","bTest","bInput"].forEach(id=>$("#"+id).addEventListener("change",()=>{rt=null;$("#bReal").textContent="Run at 1940 speed";if(id==="bWhich")$("#bOneOrder").style.visibility=$("#bWhich").value==="one"?"visible":"hidden";}));
+$("#bOneOrder").addEventListener("change",()=>{rt=null;});
+$("#bStop").addEventListener("click",()=>{$("#bReal").textContent=rt?"Continue at 1940 speed":"Run at 1940 speed";});
+
+/* =====================================================
+   5. CHECKING MACHINE
+   ===================================================== */
+let chk=null; // {msg,rotors,refl,rings,start,plugs,base,core,crib,cribPos}
+let helperAt=null;
+function findStart(rotors,rings,core,n){
+  // start windows such that after n+1 key presses the cores are `core`
+  const rWin=mod(core[2]+rings[2]-(n+1));
+  for(const dm of [0,1,2,3])for(const dl of [0,1,2]){
+    const w=[mod(core[0]+rings[0]-dl),mod(core[1]+rings[1]-dm),rWin];
+    const e=new Enigma({reflector:"B",rotors,rings,pos:w.slice(),plugs:""});for(let i=0;i<=n;i++)e.step();
+    if(mod(e.pos[0]-rings[0])===core[0]&&mod(e.pos[1]-rings[1])===core[1]&&mod(e.pos[2]-rings[2])===core[2])return w;
+  }
+  return [mod(core[0]+rings[0]),mod(core[1]+rings[1]),rWin];
+}
+function loadCheck(s){
+  const pairs=[];const seen=new Set();for(const a in (s.pairs||{})){const b=s.pairs[a];if(+a===b||seen.has(+a)||seen.has(b))continue;seen.add(+a);seen.add(b);pairs.push(chr(+a)+chr(b));}
+  if(s.cand!=null&&B&&s.cand!==B.test&&!seen.has(B.test)&&!seen.has(s.cand))pairs.push(chr(B.test)+chr(s.cand));
+  chk={msg:B.msg,rotors:s.order.slice(),refl:B.refl||"B",rings:[0,0,0],core:[s.l,s.m,s.r],base:B.base,plugs:pairs.join(" "),crib:B.crib,cribPos:B.cribPos,from:s};
+  chk.start=findStart(chk.rotors,chk.rings,chk.core,chk.base);
+  helperAt=null;$("#ringFinder").hidden=true;$("#indOut").innerHTML="";renderCheck();
+}
+function stepper(val,onDec,onInc,label){return h("span",{class:"stepper"},h("button",{text:"−","aria-label":label+" down",onclick:onDec}),h("output",{text:val}),h("button",{text:"+","aria-label":label+" up",onclick:onInc}));}
+function chkCfg(){return {reflector:chk.refl,rotors:chk.rotors,rings:chk.rings.slice(),pos:chk.start.slice(),plugs:chk.plugs};}
+const DE_CORPUS="LAGEBERIQTXVOMXHEUTIGENXTAGEXDERXFEINDXGREIFTXSEITXDEMXFRUEHENXMORGENXMITXSTARKENXKRAEFTENXANXUNSEREXTRUPPENXHALTENXDIEXSTELLUNGENXUNDXWEHRENXALLEXANGRIFFEXABXDIEXEIGENENXVERLUSTEXSINDXGERINGXDIEXVERSORGUNGXMITXMUNITIONXUNDXVERPFLEGUNGXISTXGESIQERTXWEITEREXMELDUNGXFOLGTXAMXABENDXDERXWINDXKOMMTXAUSXWESTENXUNDXDERXHIMMELXISTXSTARKXBEWOELKTXESXREGNETXSEITXDERXNAQTXDIEXSIQTXBETRAEGTXZWOXKILOMETERXDERXLUFTDRUQKXSTEIGTXLANGSAMXDIEXTEMPERATURXLIEGTXBEIXAQTXGRADXFUERXMORGENXWIRDXBESSERESXWETTERXERWARTETXANXDENXKOMMANDIERENDENXGENERALXDIEXDIVISIONXHATXDENXBEFEHLXERHALTENXUNDXBEGINNTXMORGENXFRUEHXMITXDEMXVORMARSQXINXRIQTUNGXOSTENXDIEXBRUECKEXUEBERXDENXFLUSSXWURDEXVOMXFEINDXZERSTOERTXDIEXPIONIEREXBAUENXEINEXNEUEXBRUECKEXDIEXARTILLERIEXUNTERSTUETZTXDENXANGRIFFXDERXINFANTERIEXIQXBITTEXUMXSOFORTIGEXNAQRIQTXOBXDIEXNAQSQUBKOLONNEXDIEXSTADTXERREIQTXHATXDIEXFAHRZEUGEXBRAUQENXDRINGENDXTREIBSTOFFXUNDXERSATZTEILEXDERXSTABXBEFINDETXSIQXIMXDORFXNOERDLIQXDERXSTRASSEXDIEXVERBINDUNGXZURXNAQBARDIVISIONXISTXUNTERBROQENXKEINEXBESONDERENXEREIGNISSEXINXDERXNAQTXEINZELNEXSPAEHTRUPPSXDESXFEINDESXWURDENXABGEWIESENXEIGENEXFLIEGERXMELDENXSTARKENXVERKEHRXAUFXDENXSTRASSENXHINTERXDERXFRONTXDIEXLAGEXISTXRUHIGXDIEXSTIMMUNGXDERXTRUPPEXISTXGUTXGEZEIQNETXDERXKOMMANDEURXDASXREGIMENTXMELDETXDIEXEINNAHMEXDERXHOEHEXVIERXNULLXDREIXUMXZEHNXUHRXDREISSIGXGEFANGENEXWURDENXEINGEBRAQTXUNTERXIHNENXEINXOFFIZIERXDIEXAUFKLAERUNGXERGABXDASSXDERXGEGNERXSEINEXKRAEFTEXIMXWALDXSUEDLIQXDESXSEESXSAMMELTXVERSTAERKUNGXWIRDXERBETENX";
+const LP=(()=>{const c=new Float64Array(676).fill(0.5),r=new Float64Array(26).fill(13);for(let i=0;i<DE_CORPUS.length-1;i++){const a=DE_CORPUS.charCodeAt(i)-65,b=DE_CORPUS.charCodeAt(i+1)-65;c[a*26+b]++;r[a]++;}const lp=new Float64Array(676);for(let a=0;a<26;a++)for(let b=0;b<26;b++)lp[a*26+b]=Math.log(c[a*26+b]/r[a]);return lp;})();
+// German letter-pair likelihood, scaled so random text is near 0 and clean German near 1
+function germanRaw(t){if(t.length<2)return -9;let s=0;for(let i=0;i<t.length-1;i++)s+=LP[(t.charCodeAt(i)-65)*26+t.charCodeAt(i+1)-65];return s/(t.length-1);}
+function germanScore(t){return Math.max(0,Math.min(1,(germanRaw(t)+3.9)/1.2));}
+function renderCheck(){
+  $("#chkEmpty").hidden=!!chk;$("#chkBody").hidden=!chk;if(!chk)return;
+  const rb=$("#cRotors");rb.innerHTML="";chk.rotors.forEach((r,i)=>{const s=h("select",{"aria-label":"Checking rotor "+(i+1)});["I","II","III","IV","V","VI","VII","VIII"].forEach(o=>s.append(h("option",{value:o,text:o})));s.value=r;s.addEventListener("change",()=>{chk.rotors[i]=s.value;renderCheck();});rb.append(s);});
+  $("#cRefl").value=chk.refl;
+  const rg=$("#cRings");rg.innerHTML="";const names=["L","M","R"];
+  chk.rings.forEach((v,i)=>rg.append(h("span",{class:"mono small muted",text:names[i]}),stepper(fmtRing(v),()=>ring(i,-1),()=>ring(i,1),"Ring "+names[i])));
+  const sb=$("#cStart");sb.innerHTML="";chk.start.forEach((v,i)=>sb.append(h("span",{class:"mono small muted",text:names[i]}),stepper(chr(v),()=>{chk.start[i]=mod(v-1);renderCheck();},()=>{chk.start[i]=mod(v+1);renderCheck();},"Window "+names[i])));
+  $("#cPlugs").value=chk.plugs;
+  renderDecrypt();
+}
+function ring(i,d){chk.rings[i]=mod(chk.rings[i]+d);if($("#cKeep").checked)chk.start[i]=mod(chk.start[i]+d);renderCheck();}
+$("#cRefl").addEventListener("change",e=>{chk.refl=e.target.value;renderCheck();});
+$("#cPlugsApply").addEventListener("click",()=>{chk.plugs=cleanPairs($("#cPlugs").value);renderCheck();});
+function renderDecrypt(){
+  const m=chk.msg;const out=new Enigma(chkCfg()).run(m.ct);chk.out=out;
+  const dec=$("#dec");dec.innerHTML="";
+  let cribOk=0;const cs=chk.cribPos,cl=chk.crib.length;
+  for(let g=0;g<m.ct.length;g+=5){
+    const grp=h("div",{class:"grp"});const cl1=h("div",{class:"cl"}),pl=h("div",{class:"pl"});
+    for(let i=g;i<Math.min(g+5,m.ct.length);i++){
+      cl1.append(h("span",{text:m.ct[i]}));
+      const inCrib=i>=cs&&i<cs+cl;const good=inCrib&&out[i]===chk.crib[i-cs];if(good)cribOk++;
+      const b=h("button",{class:(inCrib?(good?"crib":"cribbad"):"")+(helperAt===i?" sel":""),text:out[i],"aria-label":`Letter ${i+1}: ${out[i]}`});
+      b.addEventListener("click",()=>{helperAt=i;renderDecrypt();});pl.append(b);
+    }
+    grp.append(cl1,pl);dec.append(grp);
+  }
+  const st=$("#cStats");st.innerHTML="";const gs=germanScore(out);
+  const npairs=(chk.plugs.match(/\S{2}/g)||[]).length;
+  [["Crib letters right",`${cribOk}/${cl}`],["Plug pairs",npairs],["Readability",Math.round(gs*100)+"%"]].forEach(([l,v])=>st.append(h("div",{class:"stat"},h("b",{text:v}),h("span",{text:l}))));
+  const solved=out===m.plain;
+  const hint=$("#cHint");
+  hint.className="note"+(solved?" good":"");
+  hint.textContent=solved?"Every letter reads. The message is broken."
+    :cribOk<cl*0.6?"The crib doesn't read yet. If this stop was consistent, the rings may be wrong. Try \"Find the ring setting\". If nothing helps, it was a false stop, so go back and check another."
+    :gs<0.45?"The crib mostly reads, but the text around it breaks down. That's usually the right-hand ring setting: the middle rotor is stepping at the wrong moment. Try \"Find the ring setting\"."
+    :"Mostly readable. Click a wrong letter and type what it should be, and the helper works out which plug pair would fix it, as Hut 6 did by hand. Once a few more pairs are in, run \"Find the ring setting\" again: with a fuller plugboard the right ring stands out clearly.";
+  renderHelper();
+  const sv2=$("#solved");sv2.innerHTML="";
+  if(solved){sv2.append(h("div",{class:"banner"},h("h3",{text:"Message broken"}),h("p",{class:"mono",text:groups(m.plain,5)}),h("p",{},h("strong",{text:"In English: "}),m.english),h("p",{class:"small muted",text:"Now recover the rest of the daily key below. With it, every other message on this network today can be read straight off the checking machine."})));}
+}
+function renderHelper(){
+  const box=$("#helper");box.innerHTML="";if(helperAt==null)return;
+  const i=helperAt,m=chk.msg,c=m.ct[i],cur=chk.out[i];
+  const inp=h("input",{type:"text",maxlength:1,style:"width:44px;text-transform:uppercase",value:"","aria-label":"Correct letter"});
+  const res=h("div",{class:"sugg"});
+  const panel=h("div",{class:"helper"},
+    h("div",{class:"row"},h("span",{class:"mono",text:`Letter ${i+1}: cipher ${c} decrypts as ${cur}. It should be`}),inp,h("button",{text:"Suggest a plug",onclick:()=>suggest(inp.value)}),h("button",{text:"Close",onclick:()=>{helperAt=null;renderDecrypt();}})),res);
+  inp.addEventListener("keydown",e=>{if(e.key==="Enter")suggest(inp.value);});
+  box.append(panel);setTimeout(()=>inp.focus(),0);
+  function suggest(v){
+    const p=letters(v)[0];res.innerHTML="";if(!p)return;
+    const e=new Enigma(chkCfg());for(let k=0;k<=i;k++)e.step();const pb=plugMap(chk.plugs);
+    const opts=[];
+    const y=e.scramble(pb[idx(c)]);if(y!==idx(p))opts.push([chr(y),p,`the current leaves the rotors as ${chr(y)}, so plug ${chr(y)} to ${p}`]);
+    const x2=e.scramble(pb[idx(p)]);if(x2!==idx(c))opts.push([c,chr(x2),`or: plug the cipher letter ${c} to ${chr(x2)}`]);
+    if(!opts.length){res.append(h("span",{text:"Nothing to change: that's what it already decrypts to."}));return;}
+    opts.forEach(([a,b,why])=>{res.append(h("span",{text:why}),h("button",{class:"primary",text:`Plug ${a}–${b}`,onclick:()=>{chk.plugs=applyPair(chk.plugs,a,b);renderCheck();}}));});
+    res.append(h("span",{class:"muted",text:"Either choice may break other letters. Check that the text still reads afterwards."}));
+  }
+}
+function applyPair(pl,a,b){let pairs=pairsOf(pl).filter(p=>!p.includes(a)&&!p.includes(b));if(a!==b)pairs.push(a+b);return pairs.join(" ");}
+function cribFill(cfg,ct,crib,cp){
+  let plugs=cfg.plugs;const end=cp+crib.length;const cm=pl=>{const o=new Enigma({...cfg,plugs:pl}).run(ct.slice(0,end));let n=0;for(let i=0;i<crib.length;i++)if(o[cp+i]===crib[i])n++;return n;};
+  let cur=cm(plugs);
+  for(let it=0;it<12;it++){const o=new Enigma({...cfg,plugs}).run(ct.slice(0,end));let best=null,bn=cur;
+    for(let j=0;j<crib.length;j++){const i=cp+j;if(o[i]===crib[j])continue;const e=new Enigma({...cfg,plugs});for(let k=0;k<=i;k++)e.step();const pb=plugMap(plugs);
+      const c=ct[i],p=crib[j];const cands=[[chr(e.scramble(pb[idx(c)])),p],[c,chr(e.scramble(pb[idx(p)]))]];
+      for(const [x,y] of cands){const np=applyPair(plugs,x,y);const n=cm(np);if(n>bn){bn=n;best=np;}}}
+    if(!best)break;plugs=best;cur=bn;}
+  return {plugs,cur};
+}
+$("#cRingFind").addEventListener("click",()=>{
+  const box=$("#ringFinder");box.hidden=false;box.innerHTML="";
+  const rows=[];const had=new Set(pairsOf(chk.plugs));
+  for(let rr=0;rr<26;rr++){const rings=[chk.rings[0],chk.rings[1],rr];const st=findStart(chk.rotors,rings,chk.core,chk.base);
+    const cfg={reflector:chk.refl,rotors:chk.rotors,rings,pos:st,plugs:chk.plugs};
+    const f=cribFill(cfg,chk.msg.ct,chk.crib,chk.cribPos);
+    const out=new Enigma({...cfg,plugs:f.plugs}).run(chk.msg.ct);
+    const added=pairsOf(f.plugs).filter(p=>!had.has(p));
+    rows.push({rr,st,out,cm:f.cur,plugs:f.plugs,added,s:germanRaw(out)});}
+  rows.sort((a,b)=>(b.cm-a.cm)||(b.s-a.s));
+  box.append(h("p",{class:"small",text:"For each right-hand ring, the rotor cores stay where the Bombe found them and the window moves with the ring, so only the timing of the middle rotor's step changes. Each row also fills in whatever plug pairs the crib forces, as Hut 6 did by hand. Rows are ranked by how much of the crib then reads, and after that by how German the rest looks. The right row is the one that reads cleanly all the way through. If the top few rows look almost the same, missing plug pairs are hiding the difference. Pick the best, fix some letters with the helper, then run the finder again."}));
+  const list=h("div",{class:"ringfinder"});
+  rows.forEach(r=>list.append(h("div",{class:"rf"},h("span",{text:"Ring "+fmtRing(r.rr)}),h("span",{text:`crib ${r.cm}/${chk.crib.length}`}),h("span",{class:"txt",text:(r.added.length?"+"+r.added.join(" ")+"  ":"")+r.out}),h("button",{text:"Use",onclick:()=>{chk.rings[2]=r.rr;chk.start=r.st;chk.plugs=r.plugs;box.hidden=true;renderCheck();}}))));
+  box.append(list);
+});
+$("#indBtn").addEventListener("click",()=>{
+  const m=chk.msg,out=$("#indOut");out.innerHTML="";
+  if(m.custom||!m.grund){out.append(h("p",{class:"small muted",text:"Your own messages have no indicator to test."}));return;}
+  const coreStart=chk.start.map((w,i)=>mod(w-chk.rings[i]));const hits=[];
+  for(let lr=0;lr<26;lr++)for(let mr=0;mr<26;mr++){
+    const rings=[lr,mr,chk.rings[2]];
+    const msgKey=[mod(coreStart[0]+lr),mod(coreStart[1]+mr),chk.start[2]];
+    const dk=new Enigma({reflector:chk.refl,rotors:chk.rotors,rings,pos:[...m.grund].map(idx),plugs:chk.plugs}).run(m.encKey);
+    if(dk===msgKey.map(chr).join(""))hits.push({rings,msgKey});
+  }
+  if(!hits.length){out.append(h("div",{class:"note bad",text:"No ring setting turns the indicator into these start windows. Either the plugboard isn't complete yet (every letter in the indicator must be right), or the right-hand ring is still wrong."}));return;}
+  const truth=m.day;
+  hits.forEach(hh=>{
+    const rs=hh.rings.map(r=>String(r+1).padStart(2,"0")).join(" ")+" ("+hh.rings.map(chr).join("")+")";
+    const match=truth&&hh.rings.map(chr).join("")===truth.rings&&chk.rotors.join()===truth.rotors.join()&&plugMap(chk.plugs).join()===plugMap(truth.plugs).join();
+    out.append(h("div",{class:"note"+(match?" good":"")},
+      h("div",{class:"mono",text:`Daily key: Walzenlage ${chk.rotors.join(" ")} · Ringstellung ${rs} · Stecker ${chk.plugs} · UKW ${chk.refl}`}),
+      h("div",{class:"mono small",text:`Indicator ${m.grund} ${m.encKey} → message key ${hh.msgKey.map(chr).join("")}`}),
+      h("div",{class:"small",text:match?"This matches the German key sheet exactly.":"Compare this with the German key sheet on the Intercepts tab."})));
+  });
+});
+
+/* quick-load helper for the empty checking state */
+function quick(){const q=$("#chkQuick");q.innerHTML="";q.append(h("button",{text:"Go to the Bombe",onclick:()=>showTab("bombe")}));}
+
+/* =====================================================
+   GUIDED TOUR: break the weather report, start to finish
+   ===================================================== */
+const tour=(()=>{
+  const vis=sel=>{const e=typeof sel==="function"?sel():document.querySelector(sel);return e&&e.offsetParent!==null?e:null;};
+  const pick=(...sels)=>()=>{for(const s of sels){const e=vis(s);if(e)return e;}return null;};
+  const plugCount=()=>chk?(chk.plugs.match(/\S{2}/g)||[]).length:0;
+  const solved=()=>!!(chk&&chk.out&&chk.msg&&chk.out===chk.msg.plain);
+  let mark={};
+  const S=[
+    {tab:"enigma",title:"Welcome to Hut 6",body:"In this tour you'll break a German weather report the way Bletchley Park did in 1940: type on an Enigma, line up a guessed word (a crib), wire up the Bombe, and read the message. It takes about 10 minutes. You can leave at any time and pick it up again from the Tour button."},
+    {tab:"enigma",target:pick("#e3d","#eFlat"),title:"1 · Press a key",body:"This is the Enigma. Click any key on the machine, or type a letter on your own keyboard. A lamp lights up with the encrypted letter while the key is held down.",
+      enter:()=>{mark.t=tapeIn.length;},wait:()=>tapeIn.length>mark.t,doIt:()=>{keyDown("A");setTimeout(keyUp,300);}},
+    {tab:"enigma",target:pick("#e3d","#eFlat"),title:"2 · The rotors move",body:"Now press A three times and watch both the lamps and the rotor windows. The right-hand rotor steps before every letter, so the same key gives a different letter each time.",
+      enter:()=>{mark.t=tapeIn.length;},wait:()=>tapeIn.length>=mark.t+3,doIt:()=>{for(let i=0;i<3;i++){keyDown("A");keyUp();}}},
+    {tab:"enigma",target:"#tapeOut",title:"3 · Enigma's weakness",body:"The operator's pad records what you typed and what lit up. Look closely: a letter never comes out as itself. That's because of the reflector, and it's the flaw the whole attack is built on."},
+    {tab:"enigma",target:pick("#plugText"),title:"4 · The plugboard",body:"The plugboard swaps pairs of letters on the way in and out, which is where most of Enigma's strength came from. Add one cable: click two sockets on the machine's front panel (the Plugboard camera button helps), or type a pair like AB here and press Set pairs.",
+      enter:()=>{E3&&E3.view("plugboard");},wait:()=>pairsOf(mcfg.plugs).length>0,doIt:()=>{$("#plugText").value="AB";$("#plugApply").click();}},
+    {tab:"intercepts",target:()=>vis(".form"),title:"5 · An intercept",body:"This is a real-style radio intercept: a weather station's morning forecast. Hut 6 knew these forecasts always began WETTERVORHERSAGE (\"weather forecast\"). That guess is your crib. Click Work on this message.",
+      wait:()=>!$("#tab-menu").hidden&&cur.msg&&cur.msg.id==="wetter",doIt:()=>{selectMessage("wetter");showTab("menu");}},
+    {tab:"menu",target:()=>{const e=vis(".ctape-wrap");return e&&e.closest(".panel");},title:"6 · Line up the crib",body:"The crib sits under the ciphertext. Drag the Position slider and watch for red letters: a letter can't encrypt to itself, so any red position is impossible. When you've seen a few, put it back to position 1, where this forecast starts.",
+      enter:()=>{mark.moved=false;},wait:()=>{if(cur.pos!==0)mark.moved=true;return mark.moved&&cur.pos===0;},doIt:()=>{cur.pos=0;renderCrib();mark.moved=true;}},
+    {tab:"menu",target:".menu-svg",title:"7 · The menu",body:"Each column of crib and ciphertext links two letters, and here those links are drawn as a graph. Amber links are loops. A loop lets the Bombe test a guess against itself, so more loops means fewer false alarms. The highlighted letter is where the Bombe will feed in its test current."},
+    {tab:"menu",target:"#toBombe",title:"8 · Wire up the Bombe",body:"Click Wire up the Bombe. Every link in the menu will get its own set of drums.",
+      wait:()=>!$("#tab-bombe").hidden&&B&&B.msg&&B.msg.id==="wetter",doIt:()=>{loadBombe();showTab("bombe");}},
+    {tab:"bombe",target:pick("#b3d","#bombeFace"),title:"9 · The Bombe",body:"Each lit stack of three drums is an Enigma without a plugboard, set a few steps ahead to match its link in the menu. Try the Back: menu cables button to see your menu wired up, then carry on."},
+    {tab:"bombe",target:"#bStep",title:"10 · One test",body:"Press Step one position. The machine tests one rotor setting. Watch the test register: with all 26 wires lit, every guess contradicted itself, so this setting is impossible.",
+      wait:()=>$$("#register .reg.on").length>0,doIt:()=>$("#bStep").click()},
+    {tab:"bombe",target:"#bRun",title:"11 · Run it",body:"Now press Run at full speed. It tries all 60 rotor orders, each at 17,576 positions. The real machine needed about 20 hours for that; here it takes about 10 seconds.",
+      wait:()=>bStops.length>0&&!workers.length,doIt:()=>$("#bRun").click()},
+    {tab:"bombe",target:".tablewrap",title:"12 · A stop",body:"The Bombe stopped. A stop gives a rotor order, the drum positions, and the plug partners it could deduce. Press Check → on the consistent stop to try it on the checking machine.",
+      wait:()=>!$("#tab-check").hidden&&!!chk,doIt:()=>{const s=bStops.find(x=>x.ok);if(s){loadCheck(s);showTab("check");}}},
+    {tab:"check",target:"#cRingFind",title:"13 · The ring setting",body:"The Bombe can't see ring settings, so the text goes wrong wherever the middle rotor steps at the wrong moment. Click Find the ring setting, then press Use on the top row.",
+      enter:()=>{mark.r=chk?chk.rings.join():"";},wait:()=>chk&&chk.rings.join()!==mark.r,doIt:()=>{$("#cRingFind").click();setTimeout(()=>$(".rf button")?.click(),50);}},
+    {tab:"check",target:"#dec",title:"14 · Fix a letter",body:"Most of it reads, but some plug pairs are still missing. The message says WETTERVORHERSAGE, and the next word break should be an X, but it shows an I. Click that wrong letter, type X, press Suggest a plug, and apply the first suggestion.",
+      enter:()=>{mark.p=plugCount();},wait:()=>plugCount()>mark.p,doIt:()=>{chk.plugs=applyPair(chk.plugs,"I","X");renderCheck();}},
+    {tab:"check",target:"#dec",title:"15 · Finish it off",body:"One more: the word after FUER should be RAUM (room, area). If it shows RAJM, fix the J to U the same way. Then run Find the ring setting again and Use the top row. With a fuller plugboard the right ring stands out, and every letter reads.",
+      wait:solved,doIt:()=>{chk.plugs=applyPair(chk.plugs,"J","U");renderCheck();$("#cRingFind").click();setTimeout(()=>{$(".rf button")?.click();},50);}},
+    {tab:"check",target:"#indBtn",title:"16 · The whole daily key",body:"Message broken! Now for the real prize. The header gave the Grundstellung and the encrypted message key, so click Search the indicator to work out the remaining ring settings. The result is the complete key for every message on this network today.",
+      wait:()=>!!$("#indOut .note.good"),doIt:()=>$("#indBtn").click()},
+    {tab:"check",title:"You broke Enigma",body:"That's the job Hut 6 did every day of the war: crib, menu, Bombe, checking machine, daily key. Try the Daily situation report next (its crib is too long, so you'll need to trim the menu), or the genuine 1941 Barbarossa message. The Flat panel buttons switch to 2D views if you prefer them."}
+  ];
+  let i=-1,timer=null,raf=null;
+  const box=h("div",{class:"tour-card",role:"dialog","aria-live":"polite","aria-label":"Guided tour"});
+  const ring=h("div",{class:"tour-ring"});
+  function place(){
+    const s=S[i];if(!s){return;}
+    const t=s.target?(typeof s.target==="function"?s.target():vis(s.target)):null;
+    if(t){const r=t.getBoundingClientRect();ring.hidden=false;Object.assign(ring.style,{left:(r.left-6)+"px",top:(r.top-6)+"px",width:(r.width+12)+"px",height:(r.height+12)+"px"});
+      const narrow=window.innerWidth<700;box.classList.toggle("dock",narrow);
+      if(!narrow){const bw=Math.min(380,window.innerWidth-32);let top=r.bottom+14,left=Math.min(Math.max(16,r.left),window.innerWidth-bw-16);
+        if(top+220>window.innerHeight)top=Math.max(16,r.top-14-box.offsetHeight);if(top<16)top=16;box.style.left=left+"px";box.style.top=top+"px";}
+    } else {ring.hidden=true;box.classList.remove("dock");box.style.left=Math.max(16,(window.innerWidth-Math.min(420,window.innerWidth-32))/2)+"px";box.style.top=Math.max(80,window.innerHeight*.28)+"px";}
+    raf=requestAnimationFrame(place);
+  }
+  function show(n){
+    clearInterval(timer);i=n;const s=S[i];if(!s)return end();
+    try{localStorage.setItem("hut6-tour","seen");}catch(e){}
+    if(s.tab&&$("#tab-"+s.tab).hidden)showTab(s.tab);
+    s.enter&&s.enter();
+    box.innerHTML="";
+    const done=h("span",{class:"tour-done",text:"✓ Done"});done.hidden=true;
+    const next=h("button",{class:"primary",text:i===S.length-1?"Finish":s.wait?"Next":"Next",onclick:()=>show(i+1)});
+    if(s.wait)next.disabled=true;
+    box.append(
+      h("div",{class:"tour-head"},h("span",{class:"eyebrow",text:`Tour · ${i+1} of ${S.length}`}),h("button",{class:"tour-x",text:"✕","aria-label":"Close tour",onclick:end})),
+      h("h3",{text:s.title}),h("p",{text:s.body}),
+      h("div",{class:"row tour-btns"},i>0?h("button",{text:"Back",onclick:()=>show(i-1)}):null,s.doIt?h("button",{text:"Do it for me",onclick:()=>{s.doIt();}}):null,done,next));
+    const t=s.target?(typeof s.target==="function"?s.target():vis(s.target)):null;
+    if(t)t.scrollIntoView({block:"center",behavior:"smooth"});
+    if(s.wait)timer=setInterval(()=>{let ok=false;try{ok=s.wait();}catch(e){}if(ok){clearInterval(timer);done.hidden=false;next.disabled=false;next.focus();}},250);
+    if(!box.isConnected){document.body.append(ring,box);}
+    cancelAnimationFrame(raf);place();
+  }
+  function end(){clearInterval(timer);cancelAnimationFrame(raf);ring.remove();box.remove();if(i>=S.length-1)i=-1;}
+  function start(){show(i>=0&&i<S.length?i:0);}
+  function restart(){show(0);}
+  return {start,restart,seen:()=>{try{return !!localStorage.getItem("hut6-tour");}catch(e){return false;}}};
+})();
+$("#tourBtn").addEventListener("click",()=>tour.start());
+$("#tourRestart").addEventListener("click",()=>tour.restart());
+if(!tour.seen()){const b=$("#tourBanner");b.hidden=false;$("#tourGo").addEventListener("click",()=>{b.hidden=true;tour.restart();});$("#tourNo").addEventListener("click",()=>{b.hidden=true;try{localStorage.setItem("hut6-tour","done");}catch(e){}});}
+
+/* ---------- boot ---------- */
+function init3D(){
+  if(!window.Sim3D)return;
+  try{
+    E3=Sim3D.Enigma3D($("#e3d"),{press:L=>keyDown(L),release:()=>keyUp(),turn:(i,d)=>{em.pos[i]=mod(em.pos[i]+d);updWindows();},socket:L=>socketClick(L)});
+    B3=Sim3D.Bombe3D($("#b3d"));
+  }catch(err){console.warn("3D unavailable",err);E3=B3=null;return;}
+  $("#eBar").hidden=$("#bBar").hidden=false;$("#e3d").hidden=$("#b3d").hidden=false;$("#eFlat").hidden=true;$("#bombeFace").hidden=true;
+  $$("[data-ev]").forEach(b=>b.addEventListener("click",()=>{const d=b.dataset.ev==="3d";$$("[data-ev]").forEach(x=>x.setAttribute("aria-pressed",x===b));$("#e3d").hidden=!d;$("#eFlat").hidden=d;$("#eCams").style.visibility=d?"visible":"hidden";if(d)E3.resize();else requestAnimationFrame(drawCables);}));
+  $$("[data-cam]").forEach(b=>b.addEventListener("click",()=>E3.view(b.dataset.cam)));
+  let coverOn=true;$("#eCover").addEventListener("click",e=>{coverOn=!coverOn;E3.setCover(coverOn);e.target.textContent=coverOn?"Lift rotor cover":"Close rotor cover";if(!coverOn)E3.view("rotors");});
+  $$("[data-bv]").forEach(b=>b.addEventListener("click",()=>{const d=b.dataset.bv==="3d";$$("[data-bv]").forEach(x=>x.setAttribute("aria-pressed",x===b));$("#b3d").hidden=!d;$("#bombeFace").hidden=d;if(d)B3.resize();}));
+  $$("[data-bcam]").forEach(b=>b.addEventListener("click",()=>B3.view(b.dataset.bcam)));
+}
+init3D();
+buildBoards();rebuildMachine(false);renderForms();buildFace();buildRegister();orderPick();$("#bOneOrder").style.visibility="hidden";
+selectMessage("wetter");loadBombe();renderStops();quick();renderCheck();
+{const hsh=location.hash.slice(1);if(["enigma","intercepts","menu","bombe","check"].includes(hsh))showTab(hsh);if(hsh==="tour"){$("#tourBanner").hidden=true;tour.restart();}}
+})();
+</script>
