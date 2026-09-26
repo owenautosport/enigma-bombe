@@ -1,0 +1,572 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>html{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Inside the Bombe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<style>
+:root{
+  --paper:#ECEFEB; --panel:#F7F8F5; --ink:#1A211E; --muted:#56615C; --line:#C8CFCA;
+  --enamel:#222926; --enamel-2:#303833; --steelface:#8A9590; --steelrim:#5F6A65;
+  --current:#D98A1E; --current-soft:rgba(217,138,30,.16); --return:#3C6883;
+  --bad:#B23F2C; --bad-soft:rgba(178,63,44,.12); --good:#2F7550;
+  --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --paper:#121614; --panel:#1A201D; --ink:#E2E7E3; --muted:#9AA59F; --line:#323B36;
+    --enamel:#0B0E0C; --enamel-2:#1E2522; --steelface:#6E7A74; --steelrim:#48524D;
+    --current:#F0A23A; --current-soft:rgba(240,162,58,.18); --return:#7FAAC6;
+    --bad:#E0735E; --bad-soft:rgba(224,115,94,.16); --good:#6CC293;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --paper:#121614; --panel:#1A201D; --ink:#E2E7E3; --muted:#9AA59F; --line:#323B36;
+  --enamel:#0B0E0C; --enamel-2:#1E2522; --steelface:#6E7A74; --steelrim:#48524D;
+  --current:#F0A23A; --current-soft:rgba(240,162,58,.18); --return:#7FAAC6;
+  --bad:#E0735E; --bad-soft:rgba(224,115,94,.16); --good:#6CC293;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.6;padding-inline:20px;padding-block:0 64px}
+.wrap{max-width:1040px;margin:0 auto}
+.prose{max-width:66ch}
+h1,h2,h3{font-family:var(--display);font-weight:900;line-height:1;letter-spacing:.01em;text-wrap:balance;margin:0}
+h2{font-size:clamp(2.2rem,5vw,3.2rem);text-transform:uppercase}
+h3{font-size:1.5rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+p{margin:0}
+.stack{display:flex;flex-direction:column;gap:18px}
+.eyebrow{font-family:var(--mono);font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.mono{font-family:var(--mono)}
+strong{font-weight:600}
+em{font-style:italic}
+a{color:var(--return)}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--current);outline-offset:3px}
+
+/* hero */
+header.hero{padding-block:56px 40px;display:grid;gap:28px}
+.hero h1{font-size:clamp(3.6rem,11vw,7.4rem);text-transform:uppercase;letter-spacing:-.005em}
+.hero h1 span{color:var(--current)}
+.hero .lede{font-size:1.25rem;max-width:58ch;color:var(--ink)}
+.bombe-face{background:var(--enamel);border-radius:6px;padding:18px;overflow-x:auto}
+.bombe-face svg{display:block;min-width:640px;width:100%;height:auto}
+.caption{font-size:.9rem;color:var(--muted);font-style:italic;max-width:70ch}
+
+/* sections */
+section{padding-block:56px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:26px}
+.sec-head{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+.step{font-family:var(--display);font-weight:900;font-size:clamp(2.2rem,5vw,3.2rem);color:var(--current);line-height:1}
+figure{margin:0;display:flex;flex-direction:column;gap:10px}
+.fig{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:20px;overflow-x:auto}
+.fig svg{display:block;width:100%;height:auto}
+.fig.wide svg{min-width:680px}
+svg text{font-family:var(--mono);fill:var(--ink)}
+svg .lbl{font-size:13px;fill:var(--muted)}
+svg .big{font-size:18px;font-weight:600}
+svg .disp{font-family:var(--display);font-weight:700;letter-spacing:.04em}
+.callout{border-left:4px solid var(--current);background:var(--current-soft);padding:16px 20px;max-width:66ch}
+.callout p+p{margin-top:8px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:20px;display:flex;flex-direction:column;gap:10px}
+.card h3{font-size:1.3rem}
+
+table{border-collapse:collapse;font-variant-numeric:tabular-nums;width:100%}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line)}
+th{font-family:var(--mono);font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:400}
+td.num{font-family:var(--mono);text-align:right}
+
+/* crib slider */
+.crib-ui{display:flex;flex-direction:column;gap:14px}
+.tape{overflow-x:auto;padding-bottom:6px}
+.tape-inner{display:grid;grid-auto-flow:column;grid-auto-columns:26px;gap:2px;width:max-content}
+.cell{font-family:var(--mono);font-size:15px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:3px}
+.cell.ct{background:var(--enamel-2);color:#E6EAE7}
+.cell.idx{font-size:10px;color:var(--muted);height:16px}
+.cell.cr{background:var(--current-soft);color:var(--ink);border:1px solid var(--current)}
+.cell.clash{background:var(--bad);color:#fff;border-color:var(--bad)}
+.cell.empty{background:transparent}
+.controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.controls input[type=range]{flex:1 1 240px;accent-color:var(--current)}
+button{font-family:var(--mono);font-size:.85rem;background:var(--ink);color:var(--paper);border:0;border-radius:4px;padding:9px 14px;cursor:pointer}
+button:hover{opacity:.88}
+.verdict{font-family:var(--mono);font-size:.95rem;padding:10px 14px;border-radius:4px}
+.verdict.ok{background:var(--current-soft);color:var(--ink)}
+.verdict.no{background:var(--bad-soft);color:var(--ink)}
+
+/* loop trace */
+.trace{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-family:var(--mono)}
+.chip{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;min-width:52px;padding:6px 8px;border-radius:4px;border:1px solid var(--line);background:var(--panel)}
+.chip b{font-size:1.3rem;font-weight:600}
+.chip small{font-size:.66rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.chip.hot{border-color:var(--current);background:var(--current-soft)}
+.chip.fail{border-color:var(--bad);background:var(--bad-soft)}
+.arrow{font-size:.72rem;color:var(--muted);text-align:center;line-height:1.2}
+.arrow::after{content:"→";display:block;font-size:1.1rem;color:var(--ink)}
+.formula{font-family:var(--mono);font-size:1.05rem;background:var(--enamel);color:#E6EAE7;padding:18px 22px;border-radius:6px;overflow-x:auto;white-space:nowrap}
+.formula .hl{color:var(--current)}
+
+/* wire strips */
+.strips{display:flex;flex-direction:column;gap:18px}
+.strip-row{display:flex;flex-direction:column;gap:6px}
+.strip-head{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-family:var(--mono);font-size:.85rem}
+.tag{font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:999px;border:1px solid currentColor}
+.tag.stop{color:var(--good)}
+.tag.go{color:var(--muted)}
+.wires{display:grid;grid-template-columns:repeat(26,minmax(18px,1fr));gap:2px;overflow-x:auto}
+.w{font-family:var(--mono);font-size:11px;text-align:center;padding:14px 0 4px;border-radius:2px;border:1px solid var(--line);color:var(--muted);position:relative}
+.w::before{content:"";position:absolute;left:50%;top:4px;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:var(--line)}
+.w.on{background:var(--current-soft);border-color:var(--current);color:var(--ink)}
+.w.on::before{background:var(--current);box-shadow:0 0 6px var(--current)}
+.w.key{outline:2px solid var(--good);outline-offset:1px;color:var(--ink);font-weight:600}
+
+/* stat bars */
+.bars{display:flex;flex-direction:column;gap:12px}
+.bar{display:grid;grid-template-columns:170px 1fr 64px;gap:12px;align-items:center;font-family:var(--mono);font-size:.85rem}
+.bar .track{height:22px;background:var(--line);border-radius:3px;overflow:hidden}
+.bar .fill{height:100%;background:var(--current)}
+.bar .fill.muted{background:var(--steelrim)}
+.bar .v{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+@media (max-width:520px){.bar{grid-template-columns:1fr 48px}.bar .name{grid-column:1/-1}}
+
+/* after the stop */
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;counter-reset:f}
+.flow div{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px;font-size:.95rem;counter-increment:f;display:flex;flex-direction:column;gap:6px}
+.flow div::before{content:counter(f);font-family:var(--display);font-weight:900;font-size:1.8rem;color:var(--current);line-height:1}
+.pairs{display:flex;flex-wrap:wrap;gap:8px}
+.pair{font-family:var(--mono);font-weight:600;padding:6px 10px;border-radius:4px;background:var(--enamel-2);color:#E6EAE7}
+.pair.solo{background:transparent;border:1px dashed var(--line);color:var(--muted);font-weight:400}
+
+/* timeline */
+.timeline{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.timeline li{display:grid;grid-template-columns:92px 1fr;gap:18px;padding:14px 0;border-bottom:1px solid var(--line)}
+.timeline .yr{font-family:var(--display);font-weight:900;font-size:1.7rem;line-height:1;color:var(--current)}
+.timeline p{max-width:62ch}
+
+footer{border-top:1px solid var(--line);padding-top:28px;color:var(--muted);font-size:.9rem;display:flex;flex-direction:column;gap:8px}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+.drum-fast{animation:spin 6s linear infinite;transform-box:fill-box;transform-origin:center}
+.drum-mid{animation:spin 60s linear infinite;transform-box:fill-box;transform-origin:center}
+@media (prefers-reduced-motion:reduce){.drum-fast,.drum-mid{animation:none}}
+@media (max-width:600px){body{font-size:17px}.timeline li{grid-template-columns:64px 1fr}}
+</style>
+
+<div class="wrap">
+
+<header class="hero">
+  <div class="eyebrow">Bletchley Park · 1940–1945 · how Enigma was broken</div>
+  <h1>Inside the <span>Bombe</span></h1>
+  <p class="lede">Alan Turing's Bombe didn't read German messages. It did one narrower job very fast: it threw out every Enigma setting that couldn't possibly be right, until only a handful were left for people to check by hand. This page explains how it worked, step by step.</p>
+  <figure>
+    <div class="bombe-face" aria-hidden="true"><svg id="bombeSvg" viewBox="0 0 760 420"></svg></div>
+    <figcaption class="caption">The front of a British Bombe: three banks of 12 "Enigmas", each one a vertical stack of three drums that copy the three rotors. In each stack the top drum is the fast one, and it spins through all 26 positions before the drum below it moves one step.</figcaption>
+  </figure>
+</header>
+
+<section id="enigma">
+  <div class="sec-head"><span class="step">1</span><h2>The Enigma</h2></div>
+  <div class="prose stack">
+    <p>Pressing a key on an Enigma sent an electric current on a long path through the machine. At the end of the path a different letter lit up on the lampboard. The path had three kinds of part:</p>
+  </div>
+  <figure>
+    <div class="fig wide"><svg viewBox="0 0 900 300" role="img" aria-label="Signal path: key E goes through the plugboard to P, through three rotors to the reflector, back through the rotors to H, and through the plugboard to lamp T.">
+      <defs>
+        <marker id="arA" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="var(--current)"/></marker>
+        <marker id="arB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="var(--return)"/></marker>
+      </defs>
+      <!-- boxes -->
+      <g>
+        <rect x="20" y="60" width="110" height="180" rx="6" fill="var(--enamel-2)"/>
+        <text x="75" y="95" text-anchor="middle" class="disp" style="fill:#E6EAE7;font-size:15px">KEYBOARD</text>
+        <text x="75" y="225" text-anchor="middle" class="disp" style="fill:#E6EAE7;font-size:15px">LAMPS</text>
+        <rect x="170" y="60" width="110" height="180" rx="6" fill="none" stroke="var(--ink)" stroke-width="1.5"/>
+        <text x="225" y="50" text-anchor="middle" class="lbl">plugboard</text>
+        <text x="225" y="152" text-anchor="middle" class="lbl">10 swapped</text><text x="225" y="168" text-anchor="middle" class="lbl">pairs</text>
+        <g>
+          <rect x="330" y="60" width="90" height="180" rx="45" fill="var(--steelface)"/>
+          <rect x="450" y="60" width="90" height="180" rx="45" fill="var(--steelface)"/>
+          <rect x="570" y="60" width="90" height="180" rx="45" fill="var(--steelface)"/>
+          <text x="375" y="50" text-anchor="middle" class="lbl">right rotor</text>
+          <text x="495" y="50" text-anchor="middle" class="lbl">middle</text>
+          <text x="615" y="50" text-anchor="middle" class="lbl">left</text>
+          <text x="375" y="156" text-anchor="middle" class="big" style="fill:#fff">R</text>
+          <text x="495" y="156" text-anchor="middle" class="big" style="fill:#fff">M</text>
+          <text x="615" y="156" text-anchor="middle" class="big" style="fill:#fff">L</text>
+        </g>
+        <path d="M710,60 h60 a0,0 0 0 1 0,0 v180 h-60 z" fill="none" stroke="var(--ink)" stroke-width="1.5"/>
+        <text x="740" y="50" text-anchor="middle" class="lbl">reflector</text>
+      </g>
+      <!-- outgoing -->
+      <path d="M130,105 H330 M420,105 H450 M540,105 H570 M660,105 H752" stroke="var(--current)" stroke-width="3" fill="none"/>
+      <path d="M752,105 V195" stroke="var(--current)" stroke-width="3" fill="none"/>
+      <path d="M330,105 L420,120 M450,120 L540,90 M570,90 L660,105" stroke="var(--current)" stroke-width="3" fill="none" stroke-dasharray="4 4"/>
+      <!-- return -->
+      <path d="M752,195 H660 M570,195 H540 M450,195 H420 M330,195 H140" stroke="var(--return)" stroke-width="3" fill="none" marker-end="url(#arB)"/>
+      <path d="M660,195 L570,210 M540,210 L450,185 M420,185 L330,195" stroke="var(--return)" stroke-width="3" fill="none" stroke-dasharray="4 4"/>
+      <circle cx="130" cy="105" r="5" fill="var(--current)"/>
+      <!-- letters -->
+      <text x="148" y="98" class="big" style="fill:var(--current)">E</text>
+      <text x="296" y="98" class="big" style="fill:var(--current)">P</text>
+      <text x="296" y="188" class="big" style="fill:var(--return)">H</text>
+      <text x="148" y="188" class="big" style="fill:var(--return)">T</text>
+      <text x="800" y="140" class="lbl">sends the</text><text x="800" y="156" class="lbl">current</text><text x="800" y="172" class="lbl">back</text>
+      <text x="20" y="280" class="lbl">A real trace from the example message: key E → plugboard swaps it to P → rotors and reflector turn P into H → plugboard swaps H to T → lamp T lights.</text>
+    </svg></div>
+  </figure>
+  <div class="grid2">
+    <div class="card"><h3>Rotors</h3><p>Three wired wheels chosen from a box of five. The right one steps on every key press, like a car's mileage counter, so the wiring is different for every letter.</p></div>
+    <div class="card"><h3>Reflector</h3><p>A fixed wheel at the end that sends the current back through the rotors by a different route.</p></div>
+    <div class="card"><h3>Plugboard</h3><p>Ten cables at the front, each swapping a pair of letters on the way in and again on the way out. This is where most of the security came from.</p></div>
+  </div>
+
+  <h3>How many settings?</h3>
+  <figure>
+    <div class="fig"><svg viewBox="0 0 760 210" role="img" aria-label="Log-scale bars: rotor order 60, rotor positions 17,576, plugboard about 150 trillion.">
+      <g id="logbars"></g>
+    </svg></div>
+    <figcaption class="caption">Log scale: each gridline is ten times the one before. The plugboard alone accounts for about 150 trillion possibilities. Multiplied together, the three come to around 159 quintillion (1.59 × 10<sup>20</sup>).</figcaption>
+  </figure>
+
+  <h3>Two weaknesses</h3>
+  <div class="grid2">
+    <div class="card">
+      <p><strong>It works both ways.</strong> If E encrypts to T at some position, then T encrypts to E at that same position. That made Enigma convenient to use, because the same settings encrypted and decrypted. The Bombe relies on it too.</p>
+    </div>
+    <div class="card">
+      <p><strong>A letter never encrypts to itself.</strong> The reflector can't send a current back down the wire it came in on, so E can never come out as E. It sounds minor, but it gave the codebreakers a free test.</p>
+    </div>
+  </div>
+</section>
+
+<section id="crib">
+  <div class="sec-head"><span class="step">2</span><h2>The crib</h2></div>
+  <div class="prose stack">
+    <p>The Bombe needed a starting point: a <strong>crib</strong>, which is a guess at a piece of the plaintext. German operators were very predictable. Weather reports said <span class="mono">WETTERVORHERSAGE</span> ("weather forecast"). Daily reports said <span class="mono">KEINEBESONDERENEREIGNISSE</span> ("nothing special to report").</p>
+    <p>But where in the message does the crib go? Slide it along the ciphertext. Because a letter can never encrypt to itself, <strong>any position where a crib letter sits on the same cipher letter is impossible.</strong> Try it below. The ciphertext was made with a working Enigma simulation.</p>
+  </div>
+  <figure>
+    <div class="fig crib-ui">
+      <div class="tape"><div class="tape-inner" id="tape"></div></div>
+      <div class="controls">
+        <label for="cribPos" class="mono" style="font-size:.85rem">Crib position</label>
+        <input type="range" id="cribPos" min="0" max="48" value="12">
+        <button type="button" id="nextOk">Next possible position</button>
+      </div>
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+    </div>
+    <figcaption class="caption" id="cribSummary">Red letters are clashes: a letter sitting on itself.</figcaption>
+  </figure>
+  <div class="callout"><p>This test only rules positions out. Here it rejects 21 of the 49, and the codebreakers picked the most likely remaining place from context. Weather reports often opened with the word, for example. In this example the real position is <strong>7</strong>.</p></div>
+</section>
+
+<section id="menu">
+  <div class="sec-head"><span class="step">3</span><h2>The menu</h2></div>
+  <div class="prose stack">
+    <p>With the crib lined up, each column gives a link between two letters. For example, "at step 5, E and T are linked". Draw each letter as a dot and each link as a line labelled with its step, and you get a graph. Bletchley called this the <strong>menu</strong>, because it told the Bombe operators how to wire up the machine.</p>
+  </div>
+  <figure>
+    <div class="fig" style="overflow-x:auto"><table style="min-width:640px">
+      <tr><th>Step</th><td class="mono">1</td><td class="mono">2</td><td class="mono">3</td><td class="mono">4</td><td class="mono">5</td><td class="mono">6</td><td class="mono">7</td><td class="mono">8</td><td class="mono">9</td><td class="mono">10</td><td class="mono">11</td><td class="mono">12</td><td class="mono">13</td><td class="mono">14</td><td class="mono">15</td><td class="mono">16</td></tr>
+      <tr><th>Crib</th><td class="mono">W</td><td class="mono">E</td><td class="mono">T</td><td class="mono">T</td><td class="mono">E</td><td class="mono">R</td><td class="mono">V</td><td class="mono">O</td><td class="mono">R</td><td class="mono">H</td><td class="mono">E</td><td class="mono">R</td><td class="mono">S</td><td class="mono">A</td><td class="mono">G</td><td class="mono">E</td></tr>
+      <tr><th>Cipher</th><td class="mono">H</td><td class="mono">P</td><td class="mono">G</td><td class="mono">R</td><td class="mono">T</td><td class="mono">Z</td><td class="mono">S</td><td class="mono">Y</td><td class="mono">E</td><td class="mono">P</td><td class="mono">T</td><td class="mono">S</td><td class="mono">T</td><td class="mono">Y</td><td class="mono">Z</td><td class="mono">G</td></tr>
+    </table></div>
+  </figure>
+  <figure>
+    <div class="fig wide"><svg viewBox="0 0 880 530" role="img" aria-label="Menu graph. A main cluster of E, T, R and G joined by many loops, with Z, S and V on one side and a branch E-P-H-W on the other. A separate piece: O, Y and A." id="menuSvg"></svg></div>
+    <figcaption class="caption">The real menu for this crib. The amber lines form <strong>loops</strong>: E–T–E (steps 5 and 11), E–T–R–E (steps 5, 4, 9), E–G–T–E (steps 16, 3, 5) and more through R, Z and S. E sits in most of them, so E becomes the "test letter" where the current is fed in.</figcaption>
+  </figure>
+  <div class="callout"><p>Loops are what give the Bombe its power. A branch that leads nowhere can't contradict anything. A loop has to come back to where it started, so it can be checked. The more loops a menu had, the fewer false alarms the machine gave.</p></div>
+</section>
+
+<section id="trick">
+  <div class="sec-head"><span class="step">4</span><h2>Turing's trick</h2></div>
+  <div class="prose stack">
+    <p>The plugboard seems to make everything hopeless, since every letter passes through an unknown swap on the way in and on the way out. Turing split the machine into the part you don't know (the plugboard) and the part you can test (the rotors and reflector, which he called the <strong>scrambler</strong>):</p>
+  </div>
+  <div class="formula">Enigma at step <span class="hl">n</span> = Plugboard → Scrambler<sub><span class="hl">n</span></sub> → Plugboard<br><br>so if the crib says <span class="hl">P</span> becomes <span class="hl">C</span>:&nbsp;&nbsp; plug(<span class="hl">C</span>) = Scrambler<sub><span class="hl">n</span></sub>( plug(<span class="hl">P</span>) )</div>
+  <div class="prose stack">
+    <p>You can't know every plug, but you can <strong>guess one</strong> and follow what it implies around a loop. Here is the loop E → T → R → E from the menu (steps 5, 4, 9), at the true rotor setting. These are real letters from the simulation:</p>
+  </div>
+  <div class="stack">
+    <div class="card">
+      <span class="eyebrow">Guess: E is plugged to P</span>
+      <div class="trace">
+        <span class="chip hot"><small>plug(E)</small><b>P</b></span>
+        <span class="arrow">scrambler<br>step 5</span>
+        <span class="chip"><small>plug(T)</small><b>H</b></span>
+        <span class="arrow">scrambler<br>step 4</span>
+        <span class="chip"><small>plug(R)</small><b>M</b></span>
+        <span class="arrow">scrambler<br>step 9</span>
+        <span class="chip hot"><small>plug(E)</small><b>P</b></span>
+        <span class="tag stop" style="margin-left:8px">back to P ✓ consistent</span>
+      </div>
+    </div>
+    <div class="card">
+      <span class="eyebrow">Guess: E is plugged to A</span>
+      <div class="trace">
+        <span class="chip fail"><small>plug(E)</small><b>A</b></span>
+        <span class="arrow">scrambler<br>step 5</span>
+        <span class="chip"><small>plug(T)</small><b>V</b></span>
+        <span class="arrow">scrambler<br>step 4</span>
+        <span class="chip"><small>plug(R)</small><b>Z</b></span>
+        <span class="arrow">scrambler<br>step 9</span>
+        <span class="chip fail"><small>plug(E)</small><b>O</b></span>
+        <span class="tag" style="margin-left:8px;color:var(--bad)">O ≠ A ✗ contradiction</span>
+      </div>
+    </div>
+  </div>
+  <div class="prose stack">
+    <p>The first guess is right: in the real key E is plugged to P, T to H and R to M. The loop checked all of this <strong>without knowing anything else about the plugboard.</strong> That removes the 150-trillion factor. What's left is 60 rotor orders × 17,576 positions, which a machine can work through.</p>
+  </div>
+</section>
+
+<section id="machine">
+  <div class="sec-head"><span class="step">5</span><h2>The machine</h2></div>
+  <div class="prose stack">
+    <p>The Bombe does that loop check in electricity, for every guess at once:</p>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3>Scramblers</h3><p>Each stack of three drums is an Enigma <em>without a plugboard</em>. There is one stack for each link in the menu, and each is set a fixed number of steps ahead to match that link's step number.</p></div>
+    <div class="card"><h3>26-wire cables</h3><p>The scramblers are cabled together following the menu. Each cable has 26 wires, one for each letter, so it carries all 26 possible plug partners of a letter at once.</p></div>
+    <div class="card"><h3>The test</h3><p>A voltage goes onto one wire of the test letter's cable, for example "E is plugged to A". The current spreads through every consequence of that guess, and a register shows which of E's 26 wires lit up.</p></div>
+  </div>
+  <div class="prose stack">
+    <p>How many wires light up tells the machine what to do. These three results come from running the menu above through a simulated Bombe:</p>
+  </div>
+  <div class="fig strips" id="strips"></div>
+  <div class="callout">
+    <p><strong>This is the clever part.</strong> A wrong guess spreads to almost every wire, because contradictions multiply. If exactly one wire stays dark, that wire must be the true plug partner, even though the guess itself was wrong. So one voltage tests all 26 possible partners at once.</p>
+  </div>
+  <div class="prose stack">
+    <p>If the result is anything other than 1 or 25 lit wires, the setting is impossible. The drums step on and the test repeats automatically. The machine went through all 17,576 positions for one rotor order in roughly 20 minutes, and <strong>stopped</strong> whenever it found a setting that was consistent.</p>
+  </div>
+</section>
+
+<section id="diagonal">
+  <div class="sec-head"><span class="step">6</span><h2>Welchman's diagonal board</h2></div>
+  <div class="prose stack">
+    <p>Gordon Welchman noticed something the first design didn't use: plugboard cables are <strong>symmetric</strong>. If E is plugged to P, then P is plugged to E. He added a board that connected wire P in E's cable to wire E in P's cable, for all 325 pairs of letters. Drawn as a grid, those connections mirror across the diagonal, which is where the name comes from.</p>
+  </div>
+  <div class="grid2" style="align-items:start">
+    <figure>
+      <div class="fig"><svg viewBox="0 0 330 330" role="img" aria-label="A 26 by 26 grid of cable wires. Cell E-P is joined to cell P-E by a link mirrored across the diagonal." id="diagSvg"></svg></div>
+      <figcaption class="caption">Rows are cables (one per letter) and columns are wires. The board joins every cell to its mirror image across the diagonal, such as E·P to P·E.</figcaption>
+    </figure>
+    <div class="stack">
+      <p>Every connection gives the current a new route, so a wrong guess hits a contradiction much sooner. The board mattered most for short menus with few loops, which were common. Here is the same crib cut to different lengths, searched across all 17,576 positions of the correct rotor order:</p>
+      <div class="bars" id="diagBars"></div>
+      <p class="caption">Stops in the simulation, drawn on a log scale. With 12 links, the board cut 735 stops to 4. With the full 16 links (5 loops) the menu is strong enough that even without the board there are only 2 stops, and with it the only stop is the true setting.</p>
+    </div>
+  </div>
+</section>
+
+<section id="after">
+  <div class="sec-head"><span class="step">7</span><h2>After the stop</h2></div>
+  <div class="prose stack">
+    <p>A stop is not the full key. It is a candidate: a rotor order, drum positions and a few plug pairs. For this example the Bombe stopped at drum positions <span class="mono">P G F</span>, with these plugboard deductions coming straight from the wires:</p>
+  </div>
+  <div class="pairs">
+    <span class="pair">E–P</span><span class="pair">T–H</span><span class="pair">R–M</span><span class="pair">S–X</span><span class="pair">W–L</span><span class="pair">Z–K</span>
+    <span class="pair solo">G unplugged</span><span class="pair solo">V unplugged</span>
+  </div>
+  <p class="prose">That is 6 of the 10 real plug pairs, all correct, before anyone has touched a real Enigma.</p>
+  <div class="flow">
+    <div><strong>Record the stop</strong>Write down the drum positions and the plug pairs the machine found.</div>
+    <div><strong>Check it</strong>Set up a checking machine (an Enigma copy) and decrypt part of the message.</div>
+    <div><strong>Fill the gaps</strong>Where German words appear, work out the remaining plug pairs and the ring settings by hand.</div>
+    <div><strong>Read the day</strong>With the day's key found, every message on that network for the rest of the day could be read.</div>
+  </div>
+  <div class="callout"><p><strong>One catch.</strong> The Bombe assumed only the fast rotor turned during the crib. If the middle rotor stepped partway through, the menu was wrong. So cribs were kept to around 12–16 letters, and failed runs were repeated assuming a step at a different point.</p></div>
+</section>
+
+<section id="history">
+  <div class="sec-head"><h2>Timeline</h2></div>
+  <ol class="timeline">
+    <li><span class="yr">1932</span><p>Marian Rejewski of the Polish Cipher Bureau works out Enigma's rotor wiring using mathematics and some captured documents.</p></li>
+    <li><span class="yr">1938</span><p>The Poles build the <em>bomba</em>. It exploits a German habit of typing each message key twice at the start of a message.</p></li>
+    <li><span class="yr">1939</span><p>Five weeks before the war, the Poles hand everything to Britain and France. Turing designs a new machine that works from cribs instead, so it doesn't depend on German key habits.</p></li>
+    <li><span class="yr">1940</span><p>The first British Bombe, "Victory", arrives at Bletchley Park in March. It was built by the British Tabulating Machine Company, with Harold "Doc" Keen as engineer. In May the Germans stop typing keys twice, and the Polish method stops working. In August a Bombe with Welchman's diagonal board goes into service.</p></li>
+    <li><span class="yr">1943</span><p>US Navy Bombes, built in Dayton, Ohio, take on the four-rotor naval Enigma used by U-boats.</p></li>
+    <li><span class="yr">1945</span><p>About 200 British Bombes are running. Most were dismantled after the war. A working rebuild now runs at Bletchley Park.</p></li>
+  </ol>
+</section>
+
+<footer>
+  <p>Ciphertext, crib positions, menu, loop traces, wire states and stop counts on this page all come from a simulated Enigma I (rotors II V III, reflector B, rings A A A, ten plug pairs) and a simulated Bombe search of 17,576 positions. The simulated Enigma decrypts the genuine Barbarossa (1941) and Dönitz (1945) messages letter for letter from their published keys. An earlier version of this page used a rotor V with a wiring error, and every example has been regenerated since it was fixed.</p>
+  <p>Next: an interactive Bombe you can wire up and run yourself.</p>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  const NS="http://www.w3.org/2000/svg";
+  const el=(tag,attrs,parent,text)=>{const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(text!=null)e.textContent=text;if(parent)parent.appendChild(e);return e;};
+  const ABC="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+  /* Hero: Bombe face — 3 banks x 12 Enigmas x 3 drums */
+  const b=document.getElementById("bombeSvg");
+  el("rect",{x:0,y:0,width:760,height:420,fill:"var(--enamel)"},b);
+  const start="PGF";
+  for(let bank=0;bank<3;bank++){
+    const by=16+bank*136;
+    el("rect",{x:8,y:by-8,width:744,height:128,rx:4,fill:"var(--enamel-2)"},b);
+    for(let col=0;col<12;col++){
+      const cx=40+col*62;
+      for(let row=0;row<3;row++){
+        const cy=by+18+row*38;
+        const g=el("g",{},b);
+        el("circle",{cx,cy,r:17,fill:"var(--steelface)",stroke:"var(--steelrim)","stroke-width":2},g);
+        const ring=el("g",{class:row===0?"drum-fast":(row===1?"drum-mid":""),style:row===0?`animation-delay:-${(col*0.37).toFixed(2)}s`:""},g);
+        for(let t=0;t<26;t++){
+          const a=t/26*Math.PI*2;
+          el("line",{x1:cx+Math.cos(a)*12,y1:cy+Math.sin(a)*12,x2:cx+Math.cos(a)*16,y2:cy+Math.sin(a)*16,stroke:"#2A302D","stroke-width":t%2?0.8:1.4},ring);
+        }
+        el("circle",{cx,cy,r:4,fill:"#2A302D"},g);
+        const letter=ABC[(ABC.indexOf(start[row])+col*(row===0?1:0))%26];
+        el("rect",{x:cx-7,y:cy-34+15,width:0,height:0},g);
+        el("text",{x:cx,y:cy-20,"text-anchor":"middle",style:"font-size:9px;fill:#C9D0CB"},g,letter);
+      }
+    }
+  }
+  el("circle",{cx:40,cy:34,r:20,fill:"none",stroke:"var(--current)","stroke-width":2},b);
+
+  /* Log bars */
+  const lb=document.getElementById("logbars");
+  const x0=180,w=540,maxL=15;
+  for(let i=0;i<=maxL;i+=3){
+    const x=x0+w*i/maxL;
+    el("line",{x1:x,y1:10,x2:x,y2:170,stroke:"var(--line)"},lb);
+    el("text",{x,y:192,"text-anchor":"middle",class:"lbl"},lb,i===0?"1":"10"+["","","","³","","","⁶","","","⁹","","","¹²","","","¹⁵"][i]);
+  }
+  [["Rotor order",60,"60"],["Rotor positions",17576,"17,576"],["Plugboard",1.5073827e14,"~150 trillion"]].forEach(([n,v,t],i)=>{
+    const y=24+i*50, bw=w*Math.log10(v)/maxL;
+    el("text",{x:0,y:y+20,class:"lbl"},lb,n);
+    el("rect",{x:x0,y,width:bw,height:28,rx:3,fill:i===2?"var(--current)":"var(--steelrim)"},lb);
+    const inside=bw>200;
+    el("text",{x:inside?x0+bw-10:x0+bw+10,y:y+19,"text-anchor":inside?"end":"start",style:`font-size:13px;font-weight:600;fill:${inside?"#1A211E":"var(--ink)"}`},lb,t);
+  });
+
+  /* Crib slider */
+  const CT="EPWCLYHPGRTZSYEPTSTYZGLUBANXYANZBPQOPDBHRJJWSKIOWMIPMTGKTUEHBJUW";
+  const CRIB="WETTERVORHERSAGE";
+  const tape=document.getElementById("tape"), range=document.getElementById("cribPos"), verdict=document.getElementById("verdict");
+  range.max=CT.length-CRIB.length;
+  const clashesAt=o=>[...CRIB].map((c,i)=>CT[o+i]===c?i:-1).filter(i=>i>=0);
+  const okCount=[...Array(CT.length-CRIB.length+1).keys()].filter(o=>!clashesAt(o).length).length;
+  document.getElementById("cribSummary").textContent=`Red letters are clashes: a letter sitting on itself. Of the ${CT.length-CRIB.length+1} possible places, ${CT.length-CRIB.length+1-okCount} are impossible and ${okCount} survive.`;
+  function drawTape(){
+    const o=+range.value, bad=clashesAt(o);
+    tape.innerHTML="";
+    tape.style.gridTemplateRows="auto auto auto";
+    const cells=[];
+    for(let i=0;i<CT.length;i++){
+      const col=document.createElement("div");col.style.display="contents";
+      const idx=document.createElement("div");idx.className="cell idx";idx.textContent=(i+1)%5===0?i+1:"";
+      const ct=document.createElement("div");ct.className="cell ct";ct.textContent=CT[i];
+      const cr=document.createElement("div");
+      const k=i-o;
+      if(k>=0&&k<CRIB.length){cr.className="cell cr"+(bad.includes(k)?" clash":"");cr.textContent=CRIB[k];if(bad.includes(k))ct.style.background="var(--bad)";}
+      else cr.className="cell empty";
+      idx.style.gridRow=1;ct.style.gridRow=2;cr.style.gridRow=3;
+      idx.style.gridColumn=ct.style.gridColumn=cr.style.gridColumn=i+1;
+      tape.append(idx,ct,cr);
+    }
+    tape.style.gridAutoFlow="row";
+    tape.style.gridTemplateColumns=`repeat(${CT.length},26px)`;
+    if(bad.length){verdict.className="verdict no";verdict.textContent=`Position ${o+1}: impossible. ${bad.length} clash${bad.length>1?"es":""} (${bad.map(k=>CRIB[k]+" on "+CT[o+k]).join(", ")}).`;}
+    else{verdict.className="verdict ok";verdict.textContent=`Position ${o+1}: possible. No letter sits on itself.${o===6?" This is the real position.":""}`;}
+  }
+  range.addEventListener("input",drawTape);
+  document.getElementById("nextOk").addEventListener("click",()=>{
+    const max=+range.max;let o=+range.value;
+    for(let n=0;n<=max;n++){o=(o+1)%(max+1);if(!clashesAt(o).length)break;}
+    range.value=o;drawTape();
+  });
+  drawTape();
+
+  /* Menu graph */
+  const m=document.getElementById("menuSvg");
+  const P={E:[320,240],T:[540,240],G:[430,95],R:[430,400],Z:[830,250],S:[630,268],V:[738,246],P:[190,330],H:[80,250],W:[110,110],
+           O:[600,480],Y:[720,480],A:[840,480]};
+  const edges=[[1,"W","H"],[2,"E","P"],[3,"T","G"],[4,"T","R"],[5,"E","T"],[6,"R","Z"],[7,"V","S"],[8,"O","Y"],[9,"R","E"],[10,"H","P"],[11,"E","T"],[12,"R","S"],[13,"S","T"],[14,"A","Y"],[15,"G","Z"],[16,"E","G"]];
+  const loop=new Set([3,4,5,6,9,11,12,13,15,16]);
+  el("line",{x1:430,y1:440,x2:870,y2:440,stroke:"var(--line)","stroke-dasharray":"4 6"},m);
+  el("text",{x:870,y:518,"text-anchor":"end",class:"lbl"},m,"separate piece: no loops, so it can't test anything");
+  edges.forEach(([n,a,c])=>{
+    let [x1,y1]=P[a],[x2,y2]=P[c];
+    const hot=loop.has(n);
+    let d, lx=(x1+x2)/2, ly=(y1+y2)/2;
+    if(n===5||n===11){ // double edge E-T: bow either side, perpendicular to the link
+      const bow=n===5?-46:46, L=Math.hypot(x2-x1,y2-y1), nx=-(y2-y1)/L, ny=(x2-x1)/L;
+      const cx=(x1+x2)/2+nx*bow, cy=(y1+y2)/2+ny*bow;
+      d=`M${x1},${y1} Q${cx},${cy} ${x2},${y2}`; lx=(x1+x2)/2+nx*bow/2; ly=(y1+y2)/2+ny*bow/2;
+    } else d=`M${x1},${y1} L${x2},${y2}`;
+    el("path",{d,fill:"none",stroke:hot?"var(--current)":"var(--steelrim)","stroke-width":hot?4:2},m);
+    el("rect",{x:lx-13,y:ly-11,width:26,height:22,rx:11,fill:"var(--panel)",stroke:hot?"var(--current)":"var(--line)"},m);
+    el("text",{x:lx,y:ly+4.5,"text-anchor":"middle",style:"font-size:12px;font-weight:600"},m,n);
+  });
+  Object.entries(P).forEach(([k,[x,y]])=>{
+    const test=k==="E";
+    el("circle",{cx:x,cy:y,r:test?26:21,fill:test?"var(--current)":"var(--enamel-2)"},m);
+    el("text",{x,y:y+7,"text-anchor":"middle",style:`font-size:${test?22:19}px;font-weight:600;fill:${test?"#1A211E":"#E6EAE7"}`},m,k);
+  });
+  el("text",{x:282,y:196,"text-anchor":"end",class:"lbl"},m,"test letter");
+
+  /* Wire strips */
+  const strips=[
+    {title:"Wrong setting (drums at P G K), guess E = A",lit:ABC,tag:["no stop, step on","go"],note:"All 26 wires lit. Every guess contradicts itself, so no plug partner for E works here."},
+    {title:"True setting (P G F), guess E = A",lit:ABC.replace("P",""),dark:"P",tag:["STOP","stop"],note:"25 lit, only P dark. The guess was wrong, but the dark wire is the answer: E is plugged to P."},
+    {title:"True setting (P G F), guess E = P",lit:"P",key:"P",tag:["STOP","stop"],note:"Only 1 wire lit. The guess spreads nowhere because it is consistent everywhere."}
+  ];
+  const sw=document.getElementById("strips");
+  strips.forEach(s=>{
+    const row=document.createElement("div");row.className="strip-row";
+    row.innerHTML=`<div class="strip-head"><span>${s.title}</span><span class="tag ${s.tag[1]}">${s.tag[0]}</span></div>`;
+    const wires=document.createElement("div");wires.className="wires";
+    [...ABC].forEach(L=>{const d=document.createElement("div");d.className="w"+(s.lit.includes(L)?" on":"")+((s.dark===L||s.key===L)?" key":"");d.textContent=L;wires.appendChild(d);});
+    const note=document.createElement("p");note.className="caption";note.textContent=`${s.lit.length} of 26 lit. ${s.note}`;
+    row.append(wires,note);sw.appendChild(row);
+  });
+
+
+  /* Diagonal board comparison (log scale) */
+  const db=document.getElementById("diagBars");
+  [["10 links",16221,902],["12 links",735,4],["16 links",2,1]].forEach(([n,a,b2])=>{
+    [[`${n}, no board`,a,true],[`${n}, with board`,b2,false]].forEach(([lab,v,muted])=>{
+      const w=Math.max(1.5,Math.log10(v+1)/Math.log10(17577)*100);
+      const row=document.createElement("div");row.className="bar";
+      row.innerHTML=`<span class="name">${lab}</span><span class="track"><span class="fill${muted?" muted":""}" style="display:block;width:${w}%"></span></span><span class="v">${v.toLocaleString()}</span>`;
+      db.appendChild(row);});
+  });
+
+  /* Diagonal board grid */
+  const dg=document.getElementById("diagSvg");
+  const c=11,o=22;
+  for(let r=0;r<26;r++){
+    el("text",{x:o-6,y:o+r*c+8.5,"text-anchor":"end",style:"font-size:8px;fill:var(--muted)"},dg,ABC[r]);
+    el("text",{x:o+r*c+5.5,y:o-6,"text-anchor":"middle",style:"font-size:8px;fill:var(--muted)"},dg,ABC[r]);
+    for(let q=0;q<26;q++){
+      const hl=(r===4&&q===15)||(r===15&&q===4);
+      el("rect",{x:o+q*c,y:o+r*c,width:c-1.5,height:c-1.5,fill:hl?"var(--current)":(r===q?"var(--steelrim)":"var(--line)"),opacity:hl||r===q?1:.55},dg);
+    }
+  }
+  el("line",{x1:o,y1:o,x2:o+26*c,y2:o+26*c,stroke:"var(--ink)","stroke-width":1,"stroke-dasharray":"3 3"},dg);
+  const ep=[o+15*c+5,o+4*c+5], pe=[o+4*c+5,o+15*c+5];
+  el("path",{d:`M${ep[0]},${ep[1]} Q${o+22*c},${o+22*c} ${pe[0]},${pe[1]}`,fill:"none",stroke:"var(--current)","stroke-width":2.5},dg);
+  el("text",{x:ep[0]+10,y:ep[1]+4,style:"font-size:10px;font-weight:600"},dg,"E·P");
+  el("text",{x:pe[0]-10,y:pe[1]+18,"text-anchor":"middle",style:"font-size:10px;font-weight:600"},dg,"P·E");
+})();
+</script>
+
+</body>
+</html>
