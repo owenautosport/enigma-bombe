@@ -16,7 +16,6 @@
 [hidden]{display:none!important}
 html,body{background:var(--bg)}
 body{color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;padding-inline:16px;padding-block:0 60px}
-.wrap{max-width:1180px;margin:0 auto}
 h1,h2,h3{font-family:var(--display);font-weight:900;line-height:1;margin:0;text-wrap:balance;text-transform:uppercase;letter-spacing:.02em}
 h2{font-size:clamp(1.9rem,4vw,2.6rem)}
 h3{font-size:1.15rem;font-weight:700;letter-spacing:.06em}
@@ -30,7 +29,7 @@ button:hover{border-color:var(--muted)}
 button.primary{background:var(--amber);color:#1A1407;border-color:var(--amber);font-weight:600}
 button.primary:hover{filter:brightness(1.07)}
 button:disabled{opacity:.45;cursor:not-allowed}
-select,input[type=text],input[type=number],textarea{background:var(--enamel);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:7px 9px;font-family:var(--mono);font-size:.85rem}
+select,input[type=text],input[type=number],textarea{background:var(--enamel);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:7px 9px;font-family:var(--mono);font-size:.85rem;max-width:100%}
 textarea{width:100%;resize:vertical;min-height:70px}
 :focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 label{font-family:var(--mono);font-size:.78rem;color:var(--muted);letter-spacing:.04em}
@@ -38,22 +37,67 @@ label{font-family:var(--mono);font-size:.78rem;color:var(--muted);letter-spacing
 .stack{display:flex;flex-direction:column;gap:14px}
 .eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
 
-/* header + tabs */
-header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:1px solid var(--line);padding-block:14px 0;display:flex;flex-direction:column;gap:12px}
-.brand{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
-.brand h1{font-size:clamp(1.7rem,4vw,2.3rem)}
-.brand h1 span{color:var(--amber)}
-nav.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
-nav.tabs button{background:transparent;border:0;border-bottom:3px solid transparent;border-radius:0;padding:8px 12px 10px;color:var(--muted);white-space:nowrap;font-size:.85rem}
-nav.tabs button b{font-family:var(--display);font-size:1.1rem;color:var(--amber);margin-right:6px}
-nav.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--amber)}
-main{padding-top:24px}
-.tab{display:flex;flex-direction:column;gap:22px}
+/* ===== the room is the page; the bar, the dock and the windows float over it ===== */
+html,body{height:100%;overflow:hidden}
+body{padding:0}
+#app{position:fixed;inset:0}
+#room{position:absolute;inset:0;background:#0A0D0B}
+#room>canvas{display:block}
+.room-hint{position:absolute;left:14px;bottom:62px;font-family:var(--mono);font-size:.7rem;color:var(--muted);background:rgba(10,13,11,.7);padding:4px 9px;border-radius:4px;pointer-events:none}
+#flat{position:absolute;inset:0;overflow:auto;padding:64px 16px 68px;display:flex;justify-content:center;align-items:flex-start}
+
+.bar{position:absolute;top:0;left:0;right:0;z-index:12;display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:8px 12px;
+  background:linear-gradient(rgba(10,13,11,.95),rgba(10,13,11,.6));border-bottom:1px solid var(--line)}
+.brand-mini{font-family:var(--display);font-weight:900;text-transform:uppercase;letter-spacing:.03em;font-size:1.2rem;white-space:nowrap}
+.brand-mini b{color:var(--amber)}
+.bar .cams{margin-left:4px}
+.bar-right{margin-left:auto;display:flex;gap:6px;align-items:center}
+
+.dock{position:absolute;left:0;right:0;bottom:0;z-index:12;display:flex;gap:6px;justify-content:center;flex-wrap:wrap;
+  padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));background:linear-gradient(rgba(10,13,11,.6),rgba(10,13,11,.95))}
+.dock button{background:rgba(23,29,26,.92)}
+.dock button[aria-pressed=true]{background:var(--amber);color:#1A1407;border-color:var(--amber);font-weight:600}
+
+/* the columns are just layout: only the windows themselves take the pointer, so the
+   machine behind them stays clickable wherever a window isn't */
+.dock-col{position:absolute;top:56px;bottom:56px;z-index:11;display:flex;flex-direction:column;gap:10px;
+  overflow-y:auto;overscroll-behavior:contain;padding:4px 2px;scrollbar-width:thin;pointer-events:none}
+.win{pointer-events:auto}
+.dock-col.left{left:12px;width:clamp(300px,45vw,540px)}
+.dock-col.right{right:12px;width:clamp(300px,32vw,410px)}
+.dock-col:empty{display:none}
+
+.win{background:rgba(18,23,20,.94);border:1px solid var(--line);border-radius:10px;box-shadow:0 18px 44px rgba(0,0,0,.55);
+  display:flex;flex-direction:column;flex:0 0 auto;max-height:calc(100vh - 140px);backdrop-filter:blur(8px)}
+.win-head{display:flex;align-items:baseline;gap:10px;padding:9px 12px;border-bottom:1px solid var(--line);flex:0 0 auto}
+.win-head h2{font-size:1.1rem;letter-spacing:.05em}
+.win-head .eyebrow{font-size:.64rem}
+.win-x{margin-left:auto;background:none;border:0;color:var(--muted);padding:2px 6px;font-size:.9rem}
+.win-x:hover{color:var(--ink)}
+.win-body{padding:12px;overflow-y:auto;display:flex;flex-direction:column;gap:14px}
+.win .panel{background:var(--panel2);padding:14px}
+.win .grid-2{grid-template-columns:minmax(0,1fr)}
+.win .intro{font-size:.92rem}
+
+/* one window at a time on a phone, as a sheet over the machine */
+@media (max-width:820px){
+  /* the bar and the dock each become one swipeable row */
+  .bar{gap:6px;padding:6px 8px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .bar::-webkit-scrollbar,.dock::-webkit-scrollbar{display:none}
+  .bar .cams{flex-wrap:nowrap}
+  .bar>*{flex:0 0 auto}
+  .brand-mini,#tourRestart{display:none}
+  .dock{gap:4px;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;scrollbar-width:none}
+  .dock button{padding:6px 9px;font-size:.75rem;flex:0 0 auto}
+  .dock-col{left:8px;right:8px;width:auto;top:auto;bottom:48px;max-height:60vh}
+  .win{max-height:60vh}
+  .room-hint{display:none}
+}
 .intro{max-width:72ch;color:var(--ink)}
 .intro p+p{margin-top:8px}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
 .grid-2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:20px;align-items:start}
-@media (max-width:900px){.grid-2{grid-template-columns:1fr}}
+@media (max-width:900px){.grid-2{grid-template-columns:minmax(0,1fr)}}
 .note{border-left:3px solid var(--amber);background:var(--amber-soft);padding:10px 14px;font-size:.92rem;max-width:80ch}
 .note.bad{border-color:var(--red);background:var(--red-soft)}
 .note.good{border-color:var(--green);background:var(--green-soft)}
@@ -87,7 +131,7 @@ main{padding-top:24px}
 .lid-note{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
 
 .side h3{color:var(--brass)}
-.setgrid{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;align-items:center}
+.setgrid{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 12px;align-items:center}
 .setgrid .row{gap:6px}
 .tape{font-family:var(--mono);font-size:.95rem;background:var(--enamel);border:1px solid var(--line);border-radius:4px;padding:10px;min-height:44px;word-spacing:.5em;overflow-wrap:anywhere;line-height:1.7}
 .tape.out{color:var(--amber)}
@@ -98,31 +142,40 @@ main{padding-top:24px}
 .trace em{color:var(--muted);font-style:normal}
 
 /* ===== GUIDED TOUR ===== */
-.brand-right{margin-left:auto;display:flex;gap:6px;align-items:center}
 .linkish{background:none;border:0;color:var(--muted);text-decoration:underline;padding:4px}
-.tour-banner{margin-bottom:18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:var(--amber-soft);border:1px solid var(--amber);border-radius:8px;padding:10px 14px;font-size:.95rem}
+.tour-banner{position:absolute;z-index:13;left:50%;transform:translateX(-50%);bottom:62px;width:min(640px,calc(100vw - 24px));margin:0;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:var(--amber-soft);border:1px solid var(--amber);border-radius:8px;padding:10px 14px;font-size:.95rem}
 .tour-ring{position:fixed;z-index:60;border:2px solid var(--amber);border-radius:10px;box-shadow:0 0 0 9999px rgba(5,7,6,.55);pointer-events:none;transition:all .15s}
 .tour-card{position:fixed;z-index:61;width:min(380px,calc(100vw - 32px));background:var(--panel);border:1px solid var(--amber);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;box-shadow:0 12px 32px rgba(0,0,0,.5)}
 .tour-card.dock{left:16px!important;right:16px;width:auto;top:auto!important;bottom:calc(16px + env(safe-area-inset-bottom,0px))}
 .tour-card h3{color:var(--amber);font-size:1.25rem}
 .tour-card p{font-size:.95rem}
-.tour-head{display:flex;justify-content:space-between;align-items:center}
+.tour-head{display:flex;justify-content:space-between;align-items:center;gap:6px;cursor:grab;touch-action:none;
+  margin:-14px -16px 0;padding:8px 16px 6px;border-bottom:1px solid var(--line)}
+.tour-card.dragging .tour-head{cursor:grabbing}
+.tour-card.moved{box-shadow:0 14px 40px rgba(0,0,0,.6)}
+.tour-grip{letter-spacing:.18em;color:var(--muted);user-select:none}
 .tour-x{padding:2px 8px;background:none;border:0;color:var(--muted);font-size:1rem}
 .tour-btns{justify-content:flex-end}
 .tour-done{font-family:var(--mono);font-size:.8rem;color:var(--green);margin-right:auto}
-@media (prefers-reduced-motion:reduce){.tour-ring{transition:none}}
+.tour-hot{position:relative;z-index:62;border-radius:6px;outline:3px solid var(--amber);outline-offset:3px;
+  animation:tourPulse 1.2s ease-out infinite}
+.tour-hot.ok{animation:none;outline-color:var(--green);box-shadow:0 0 0 5px rgba(108,194,147,.45)}
+@keyframes tourPulse{
+  0%{box-shadow:0 0 0 0 rgba(242,169,59,.85),0 0 22px 4px rgba(242,169,59,.55)}
+  70%{box-shadow:0 0 0 17px rgba(242,169,59,0),0 0 22px 4px rgba(242,169,59,.55)}
+  100%{box-shadow:0 0 0 0 rgba(242,169,59,0),0 0 22px 4px rgba(242,169,59,.55)}}
+.tour-press{display:flex;align-items:baseline;gap:8px;font-family:var(--mono);font-size:.78rem;color:var(--amber);background:var(--amber-soft);border:1px dashed var(--amber);border-radius:6px;padding:7px 10px}
+.tour-press b{color:var(--ink);font-weight:600;font-size:.85rem}
+@media (prefers-reduced-motion:reduce){.tour-ring{transition:none}
+  .tour-hot{animation:none;box-shadow:0 0 0 5px rgba(242,169,59,.5)}}
 
 /* ===== 3D STAGES ===== */
-.stage-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
 .seg button{border:0;border-radius:0;background:var(--panel)}
 .seg button[aria-pressed=true]{background:var(--amber);color:#1A1407;font-weight:600}
 .cams{display:flex;flex-wrap:wrap;gap:6px}
 .cams button{padding:6px 10px;font-size:.78rem}
-.stage3d{position:relative;width:100%;height:clamp(360px,62vh,640px);border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#0F1311}
-.stage3d .hint{position:absolute;left:10px;bottom:8px;font-family:var(--mono);font-size:.7rem;color:#9AA59E;background:rgba(15,19,17,.7);padding:4px 8px;border-radius:4px;pointer-events:none}
 #b3d{height:clamp(340px,58vh,600px)}
-.stage-wrap{display:flex;flex-direction:column;gap:10px;min-width:0}
 
 /* ===== INTERCEPT FORMS ===== */
 .forms{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px}
@@ -217,35 +270,14 @@ table.stops tr.sel td{background:var(--amber-soft)}
 .stepper output{font-family:var(--mono);min-width:34px;text-align:center;font-weight:600}
 .helper{background:var(--panel2);border:1px solid var(--amber);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:10px}
 .sugg{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-family:var(--mono);font-size:.82rem}
-footer{margin-top:40px;border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font-size:.85rem;display:flex;flex-direction:column;gap:6px;max-width:90ch}
 </style>
 
-<div class="wrap">
-<header class="top">
-  <div class="brand"><h1>Hut 6 <span>Workbench</span></h1><span class="eyebrow">Enigma · Crib · Menu · Bombe · Checking machine</span><span class="brand-right"><button id="tourBtn" class="primary">Guided tour</button><button id="tourRestart" class="linkish">start over</button></span></div>
-  <nav class="tabs" role="tablist">
-    <button role="tab" data-tab="enigma" aria-selected="true"><b>1</b>Enigma</button>
-    <button role="tab" data-tab="intercepts" aria-selected="false"><b>2</b>Intercepts</button>
-    <button role="tab" data-tab="menu" aria-selected="false"><b>3</b>Crib &amp; menu</button>
-    <button role="tab" data-tab="bombe" aria-selected="false"><b>4</b>Bombe</button>
-    <button role="tab" data-tab="check" aria-selected="false"><b>5</b>Checking machine</button>
-  </nav>
-</header>
+<div id="app">
 
-<main>
-  <div class="tour-banner" id="tourBanner" hidden><span><strong>New to Enigma?</strong> The guided tour walks you through breaking a German weather report, step by step. It takes about 10 minutes.</span><span class="row"><button class="primary" id="tourGo">Start the tour</button><button id="tourNo">No thanks</button></span></div>
-<!-- ================= 1 ENIGMA ================= -->
-<section class="tab" id="tab-enigma">
-  <div class="note" id="enigmaNote" hidden></div>
-  <div class="intro"><p>A working Enigma with every setting the real machines had. Type on the keys (or your own keyboard) and the lamp lights while the key is held. Open the lid on the right to change rotors, ring settings and reflector. Click two plugboard sockets to join them with a cable.</p></div>
-  <div class="grid-2">
-    <div class="stage-wrap">
-    <div class="stage-bar" id="eBar" hidden>
-      <div class="seg" role="group" aria-label="Machine view"><button data-ev="3d" aria-pressed="true">3D machine</button><button data-ev="flat" aria-pressed="false">Flat panel</button></div>
-      <div class="cams" id="eCams"><button data-cam="operator">Operator</button><button data-cam="rotors">Rotors</button><button data-cam="plugboard">Plugboard</button><button data-cam="top">Top</button><button id="eCover">Lift rotor cover</button></div>
-    </div>
-    <div class="stage3d" id="e3d" hidden><div class="hint">Drag to look around · click keys · drag or scroll the thumbwheels · click two sockets for a cable</div></div>
-    <div class="enigma-box" id="eFlat">
+<div id="room">
+  <div class="room-hint" id="roomHint">Drag to look around · scroll to zoom · click the keys</div>
+  <div id="flat" hidden>
+<div class="enigma-box" id="eFlat">
       <div class="enigma" id="enigma">
         <div class="plate" id="modelPlate">ENIGMA</div>
         <div class="rotorbay" id="rotorbay"></div>
@@ -254,8 +286,44 @@ footer{margin-top:40px;border-top:1px solid var(--line);padding-top:18px;color:v
         <div class="plugboard" id="plugboard"><div class="plate">STECKERBRETT</div><svg id="cables"></svg></div>
       </div>
     </div>
-    </div>
-    <div class="stack side">
+<div class="bombe-face" id="bombeFace"><svg id="bombeSvg" viewBox="0 0 760 440"></svg></div>
+  </div>
+</div>
+
+<header class="bar">
+  <span class="brand-mini">Hut 6 <b>Workbench</b></span>
+  <div class="seg" role="group" aria-label="Machine">
+    <button data-machine="enigma" aria-pressed="true">Enigma</button>
+    <button data-machine="bombe" aria-pressed="false">Bombe</button>
+    <button data-machine="room" aria-pressed="false">Room</button>
+  </div>
+  <div class="cams" id="eCams"><button data-cam="operator">Operator</button><button data-cam="rotors">Rotors</button><button data-cam="plugboard">Plugboard</button><button data-cam="top">Top</button><button id="eCover">Lift rotor cover</button></div>
+  <div class="cams" id="bCams" hidden><button data-bcam="front">Front</button><button data-bcam="close">Drums close up</button><button data-bcam="indicator">Indicator &amp; register</button><button data-bcam="back">Back: menu cables</button></div>
+  <span class="bar-right"><button id="tourBtn" class="primary">Guided tour</button><button id="tourRestart" class="linkish">start over</button></span>
+</header>
+
+<div class="dock-col left" id="dockLeft"></div>
+<div class="dock-col right" id="dockRight"></div>
+
+<nav class="dock" aria-label="Panels">
+  <button data-panel="enigma">Enigma</button>
+  <button data-panel="intercepts">Intercepts</button>
+  <button data-panel="menu">Crib &amp; menu</button>
+  <button data-panel="bombe">Bombe</button>
+  <button data-panel="check">Checking machine</button>
+  <button data-panel="about">About</button>
+</nav>
+
+<div class="tour-banner" id="tourBanner" hidden><span><strong>New to Enigma?</strong> The guided tour walks you through breaking a German weather report, step by step. It takes about 10 minutes.</span><span class="row"><button class="primary" id="tourGo">Start the tour</button><button id="tourNo">No thanks</button></span></div>
+
+<main id="windows">
+<!-- ================= 1 ENIGMA ================= -->
+<section class="win" id="tab-enigma" data-side="right" hidden>
+  <header class="win-head"><h2>Enigma</h2><span class="eyebrow">The machine itself</span><button class="win-x" data-close="enigma" aria-label="Close Enigma">✕</button></header>
+  <div class="win-body">
+  <div class="note" id="enigmaNote" hidden></div>
+  <div class="intro"><p>A working Enigma with every setting the real machines had. Type on the keys (or your own keyboard) and the lamp lights while the key is held. Open the lid on the right to change rotors, ring settings and reflector. Click two plugboard sockets to join them with a cable.</p></div>
+  <div class="stack side">
       <div class="panel">
         <h3>Inside the lid</h3>
         <div class="setgrid">
@@ -291,12 +359,14 @@ footer{margin-top:40px;border-top:1px solid var(--line);padding-top:18px;color:v
         <p class="small muted">German procedure: umlauts written out (Ä→AE), ß→SS, numbers spelled (2 = ZWO), X between words and for a full stop, CH often sent as Q.</p>
         <button id="makeChallenge">Send this message to the Bombe as a challenge</button>
       </div>
-    </div>
+  </div>
   </div>
 </section>
 
-<!-- ================= 2 INTERCEPTS ================= -->
-<section class="tab" id="tab-intercepts" hidden>
+<!-- ================= INTERCEPTS ================= -->
+<section class="win" id="tab-intercepts" data-side="left" hidden>
+  <header class="win-head"><h2>Intercepts</h2><span class="eyebrow">Messages to break</span><button class="win-x" data-close="intercepts" aria-label="Close Intercepts">✕</button></header>
+  <div class="win-body">
   <div class="intro">
     <p>These are radio intercepts as a Y-station operator would have logged them, with the header, the first group (the <em>Kenngruppe</em>, which says which key list is in use), then the cipher text in groups of five. Each one comes with what Hut 6 already knew about that station, which is where the crib comes from.</p>
     <p class="small muted">The first three are reconstructions, written in period style and encrypted on this page's Enigma using the German procedure of 1940–41. The last two are genuine wartime messages. Key sheets stay hidden until you ask for them.</p>
@@ -311,10 +381,13 @@ footer{margin-top:40px;border-top:1px solid var(--line);padding-top:18px;color:v
       <li>The receiver set HRB, typed UYE, read NDH off the lamps, set NDH and decrypted.</li>
     </ol>
   </div>
+  </div>
 </section>
 
 <!-- ================= 3 CRIB & MENU ================= -->
-<section class="tab" id="tab-menu" hidden>
+<section class="win" id="tab-menu" data-side="left" hidden>
+  <header class="win-head"><h2>Crib &amp; menu</h2><span class="eyebrow">Guess a word, wire it up</span><button class="win-x" data-close="menu" aria-label="Close Crib &amp; menu">✕</button></header>
+  <div class="win-body">
   <div class="intro"><p>Pick a message and a crib, slide the crib into a position where no letter sits on itself, then choose which crib letters go into the menu. The Bombe assumes only the fast rotor moves during the menu, so keep it short enough to avoid the middle rotor stepping. Bletchley's menus were usually 12–16 letters.</p></div>
   <div class="panel">
     <div class="row">
@@ -348,19 +421,14 @@ footer{margin-top:40px;border-top:1px solid var(--line);padding-top:18px;color:v
       <button class="primary" id="toBombe">Wire up the Bombe →</button>
     </div>
   </div>
+  </div>
 </section>
 
 <!-- ================= 4 BOMBE ================= -->
-<section class="tab" id="tab-bombe" hidden>
+<section class="win" id="tab-bombe" data-side="right" hidden>
+  <header class="win-head"><h2>Bombe</h2><span class="eyebrow">Controls and stops</span><button class="win-x" data-close="bombe" aria-label="Close Bombe">✕</button></header>
+  <div class="win-body">
   <div class="intro"><p>Each link in the menu gets its own drum stack (an Enigma with no plugboard), set ahead by that link's step. The stacks are cabled together according to the menu, a voltage goes onto one wire of the test letter's cable, and the test register shows which wires went live. Anything other than all 26 is a stop.</p></div>
-  <div class="stage-wrap">
-  <div class="stage-bar" id="bBar" hidden>
-    <div class="seg" role="group" aria-label="Bombe view"><button data-bv="3d" aria-pressed="true">3D machine</button><button data-bv="flat" aria-pressed="false">Flat panel</button></div>
-    <div class="cams"><button data-bcam="front">Front</button><button data-bcam="close">Drums close up</button><button data-bcam="indicator">Indicator &amp; register</button><button data-bcam="back">Back: menu cables</button></div>
-  </div>
-  <div class="stage3d" id="b3d" hidden><div class="hint">Drag to walk round the machine · the back shows your menu cabled up</div></div>
-  <div class="bombe-face" id="bombeFace"><svg id="bombeSvg" viewBox="0 0 760 440"></svg></div>
-  </div>
   <div class="grid-2">
     <div class="panel">
       <h3>Controls</h3>
@@ -393,10 +461,13 @@ footer{margin-top:40px;border-top:1px solid var(--line);padding-top:18px;color:v
     <div class="tablewrap"><table class="stops"><thead><tr><th>#</th><th>Wheel order</th><th>Drums</th><th>Live</th><th>Stecker</th><th>Deduced plugboard</th><th>Check</th><th></th></tr></thead><tbody id="stopsBody"></tbody></table></div>
     <div id="stopNote"></div>
   </div>
+  </div>
 </section>
 
 <!-- ================= 5 CHECKING ================= -->
-<section class="tab" id="tab-check" hidden>
+<section class="win" id="tab-check" data-side="left" hidden>
+  <header class="win-head"><h2>Checking machine</h2><span class="eyebrow">Finish the key by hand</span><button class="win-x" data-close="check" aria-label="Close Checking machine">✕</button></header>
+  <div class="win-body">
   <div class="intro"><p>A stop gives the wheel order, the rotor cores and part of the plugboard. Here you finish the job as Hut 6 did. Decrypt with the rings at A, find the right-hand ring setting from where the text goes wrong, fill in the missing plug pairs from the garbled letters, and then recover the rest of the daily key from the message indicator.</p></div>
   <div class="note" id="chkEmpty">No stop loaded yet. Run the Bombe and press <strong>Check</strong> on a stop, or load a message's stop automatically:<div class="row" style="margin-top:8px" id="chkQuick"></div></div>
   <div id="chkBody" class="stack" hidden>
@@ -433,13 +504,16 @@ footer{margin-top:40px;border-top:1px solid var(--line);padding-top:18px;color:v
       <div id="indOut"></div>
     </div>
   </div>
+  </div>
+</section>
+<section class="win" id="tab-about" data-side="left" hidden>
+  <header class="win-head"><h2>About</h2><span class="eyebrow">How accurate is this?</span><button class="win-x" data-close="about" aria-label="Close About">✕</button></header>
+  <div class="win-body"><div class="intro"><p>Enigma wiring, notches and double-stepping follow the wartime machines. The Enigma was checked against the standard test (rotors I-II-III, reflector B, rings and windows at A: AAAAA → BDZGO), the double step (ADU → ADV AEW BFX) and three genuine wartime messages, each decrypted letter for letter from its published key: the Operation Barbarossa report (1941), the Dönitz succession signal (1945) and the U-534 "von Looks" signal. Rotor wirings match Crypto Museum's tables. The Bombe works the way the British machine did: offset scramblers, 26-wire cables, the diagonal board and a test register. Like the real machine, it assumes the middle rotor doesn't move during the menu.</p>
+  <p>The weather, daily and High Command intercepts are reconstructions written for this bench. The Barbarossa and Dönitz messages are genuine, with ciphertext exactly as published by the sources linked on their cards.</p></div></div>
 </section>
 </main>
 
-<footer>
-  <p>Enigma wiring, notches and double-stepping follow the wartime machines. The Enigma was checked against the standard test (rotors I-II-III, reflector B, rings and windows at A: AAAAA → BDZGO), the double step (ADU → ADV AEW BFX) and three genuine wartime messages, each decrypted letter for letter from its published key: the Operation Barbarossa report (1941), the Dönitz succession signal (1945) and the U-534 "von Looks" signal. Rotor wirings match Crypto Museum's tables. The Bombe works the way the British machine did: offset scramblers, 26-wire cables, the diagonal board and a test register. Like the real machine, it assumes the middle rotor doesn't move during the menu.</p>
-  <p>The weather, daily and High Command intercepts are reconstructions written for this bench. The Barbarossa and Dönitz messages are genuine, with ciphertext exactly as published by the sources linked on their cards.</p>
-</footer>
+
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -572,7 +646,7 @@ window.Sim3D=(function(){
     const key=new T.DirectionalLight("#FFF3DC",.9);key.position.set(40,90,60);scene.add(key);
     const fill=new T.DirectionalLight("#BFD4FF",.35);fill.position.set(-60,40,-40);scene.add(fill);
     const tweens=[];let pending=false,loops=0;
-    const st={renderer,scene,camera,controls,tweens,
+    const st={renderer,scene,camera,controls,tweens,frames:[],
       render(){if(pending)return;pending=true;requestAnimationFrame(frame);},
       tween(obj,prop,to,ms,cb){const from=obj[prop];tweens.push({obj,prop,from,to,t0:performance.now(),ms,cb});st.render();},
       loop(on){loops+=on?1:-1;if(loops<0)loops=0;st.render();},
@@ -584,6 +658,7 @@ window.Sim3D=(function(){
       pending=false;const t=performance.now();
       for(let i=tweens.length-1;i>=0;i--){const w=tweens[i];const k=Math.min(1,(t-w.t0)/w.ms);const e=1-Math.pow(1-k,3);w.obj[w.prop]=w.from+(w.to-w.from)*e;if(k>=1){tweens.splice(i,1);w.cb&&w.cb();}}
       st.onFrame&&st.onFrame(t);
+      for(const f of st.frames)f(t);
       const moving=controls.update();renderer.render(scene,camera);
       if(tweens.length||loops||moving)st.render();
     }
@@ -599,109 +674,217 @@ window.Sim3D=(function(){
   const plane=(w,h,mat,parent)=>{const m=new T.Mesh(new T.PlaneGeometry(w,h),mat);parent&&parent.add(m);return m;};
 
   /* =============================== ENIGMA =============================== */
-  function Enigma3D(container,api){
-    const S=Stage(container,{bg:"#0F1311",minD:25,maxD:160});
+  /* Enigma I / M3 / M4, built into `root` (local origin = the table top it stands on).
+     Dimensions from the wartime machine: case 34 x 28 x 15 cm, rotor discs 10 cm across
+     (Wikipedia, Enigma machine; Crypto Museum, Enigma I). One unit here is one centimetre. */
+  function buildEnigma(S,root,api){
     const {scene,camera,controls}=S;
-    const root=new T.Group();scene.add(root);
-    const wood=std("#FFFFFF",.8,0,{map:woodTex});
-    const black=std("#FFFFFF",.9,.1,{map:crinkle});
-    const metal=std("#A9AEA9",.35,.8);
-    const dark=std("#0B0C0B",.6,.2);
-    // table
-    const table=new T.Mesh(new T.CircleGeometry(120,48),std("#1A1F1C",.95));table.rotation.x=-Math.PI/2;table.position.y=-.01;root.add(table);
-    // case: 34 wide (x), 12 high (y), 28 deep (z)
-    box(35,12,29,wood,0,6,0,root);
-    box(33.6,.3,27.6,black,0,12.1,0,root);
-    // front plugboard panel (flap folded down in front)
-    box(33,9.6,.3,black,0,5.6,14.6,root);
-    const flap=box(35,.8,10,wood,0,.4,19.6,root);
-    const flapIn=box(33,.1,9,std("#2A1C12",.9),0,.85,19.6,root);
-    // open lid standing at the back
-    const lid=new T.Group();lid.position.set(0,12,-14.5);root.add(lid);
-    const lidBox=box(35,.9,14,wood,0,0,-7,lid);lidBox.position.set(0,7,0);lidBox.rotation.x=Math.PI/2*.97;
-    const lidIn=box(31,.1,12,std("#2B211A",.9),0,7,.5,lid);lidIn.rotation.x=Math.PI/2*.97;
-    // brass nameplate
-    const plateMat=new T.MeshBasicMaterial({map:labelTex("ENIGMA","#C09A5B","#141615",512,80,48)});
-    const nameplate=plane(9,1.4,plateMat,root);nameplate.rotation.x=-Math.PI/2;nameplate.position.set(0,12.27,-3.8);
-    /* rotors */
+    const W=34,D=28,H=15;                       /* case: width, depth, height */
+    const PANEL=13.4;                           /* the black top plate, recessed in the case */
+    const wood=std("#C4B39B",.88,0,{map:woodTex});
+    const woodIn=std("#8A6640",.85);
+    const black=std("#FFFFFF",.92,.08,{map:crinkle});
+    const metal=std("#B4B9B3",.35,.85);
+    const brass=std("#C0A062",.4,.8);
+    const dark=std("#090A09",.6,.2);
+
+    /* ---- wooden case: floor and four walls, so the open lid shows an interior ---- */
+    const t=1.4;                                 /* wall thickness */
+    box(W,1.0,D,wood,0,.5,0,root);                                  /* floor */
+    box(t,H,D,wood,-(W-t)/2,H/2,0,root);                            /* left  */
+    box(t,H,D,wood, (W-t)/2,H/2,0,root);                            /* right */
+    box(W,H,t,wood,0,H/2,-(D-t)/2,root);                            /* back  */
+    /* the front is a frame: the Steckerbrett fills the opening in it */
+    box(3,H,t,wood,-(W-3)/2,H/2,(D-t)/2,root);
+    box(3,H,t,wood, (W-3)/2,H/2,(D-t)/2,root);
+    box(W,2.2,t,wood,0,H-1.1,(D-t)/2,root);
+    /* the front flap folds down to expose the Steckerbrett */
+    const flap=new T.Group();flap.position.set(0,1.2,D/2);root.add(flap);
+    box(W,.9,11,wood,0,0,5.5,flap);
+    box(W-3,.1,10,woodIn,0,.5,5.5,flap);
+    const latch=box(4,1.1,.5,brass,0,1.2,11,flap);
+
+    /* ---- the black crackle-finish top plate, with the rotor bay left open ---- */
+    const pw=W-2*t-.4, pd=D-2*t-.4;              /* 30.8 x 24.8, so z runs -12.4 .. +12.4 */
+    const bayZ=-9.0, bayFront=-5.7, bayL=-14, bayR=11, bayW=bayR-bayL;
+    box(pw,.5,(pd/2)-bayFront,black,0,PANEL,(bayFront+pd/2)/2,root);          /* in front of the bay */
+    box(bayL+pw/2,.5,bayFront+pd/2,black,(-pw/2+bayL)/2,PANEL,(bayFront-pd/2)/2,root);  /* left of it */
+    box(pw/2-bayR,.5,bayFront+pd/2,black,(bayR+pw/2)/2,PANEL,(bayFront-pd/2)/2,root);   /* right of it */
+
+    /* ---- lid, hinged along the top of the back wall ---- */
+    const lid=new T.Group();lid.position.set(0,H,-D/2);root.add(lid);
+    lid.rotation.x=1.3;                          /* stands up and leans back, as in service */
+    box(W,1.1,D-2,wood,0,-.55,-(D-2)/2,lid);
+    const label=plane(W-9,D-12,new T.MeshBasicMaterial({map:canvasTex("zurbeachtung",512,360,(g,w,h)=>{
+      g.fillStyle="#E7E2D0";g.fillRect(0,0,w,h);g.fillStyle="#7A1A12";g.font=`700 30px ${MONO}`;g.textAlign="center";
+      g.fillText("Zur Beachtung!",w/2,44);g.fillStyle="#2A2622";g.font=`400 13px ${MONO}`;g.textAlign="left";
+      for(let i=0;i<11;i++)g.fillRect(40,70+i*17,w-80-((i%3)*60),7);
+      g.fillStyle="#555";for(let i=0;i<26;i++){g.fillRect(40+i*17,300,13,26);}
+    })}),lid);
+    label.rotation.x=-Math.PI/2;label.rotation.z=Math.PI;label.position.set(0,-1.15,-(D-2)/2-1);
+    const filter=box(W-12,.3,4,std("#2E5B3A",.4,.1,{transparent:true,opacity:.55}),0,-1.3,-3,lid);
+
+    /* ---- rotor stack ---- */
     const rotorGroup=new T.Group();root.add(rotorGroup);
-    const cover=box(26,3.6,8.4,black,-1,14,-9.4,root);cover.userData.cover=true;
-    const coverEdge=box(26.2,.2,.4,metal,-1,15.85,-5.2,root);
+    const AXIS=9.7;                               /* rotor tops sit level with the rim of the case */
+    const RR=5.0;                                 /* 10 cm discs */
     let rotors=[];
+    const coverGroup=new T.Group();root.add(coverGroup);
+    let cover=null,coverEdge=null;
     function buildRotors(names){
-      while(rotorGroup.children.length)rotorGroup.remove(rotorGroup.children[0]);rotors=[];
-      const n=names.length,sp=5.4,x0=-(n-1)/2*sp+1;
-      // reflector (left) and entry wheel (right)
-      const refl=new T.Mesh(new T.CylinderGeometry(4.1,4.1,2.2,40),std("#6B706C",.5,.6));refl.rotation.z=Math.PI/2;refl.position.set(x0-4.6,11.2,-9.4);rotorGroup.add(refl);
-      const etw=new T.Mesh(new T.CylinderGeometry(4.1,4.1,1.6,40),std("#6B706C",.5,.6));etw.rotation.z=Math.PI/2;etw.position.set(x0+(n-1)*sp+4.2,11.2,-9.4);rotorGroup.add(etw);
+      while(rotorGroup.children.length)rotorGroup.remove(rotorGroup.children[0]);
+      while(coverGroup.children.length)coverGroup.remove(coverGroup.children[0]);
+      rotors=[];
+      const n=names.length,sp=n>3?2.9:3.4,x0=-(n-1)/2*sp-3.2;
+      /* reflector (UKW) on the left, entry wheel (ETW) on the right */
+      const ukw=new T.Mesh(new T.CylinderGeometry(4.2,4.2,1.9,40),std("#5E635F",.45,.7));
+      ukw.rotation.z=Math.PI/2;ukw.position.set(x0-sp*.95,AXIS,bayZ);rotorGroup.add(ukw);
+      const etw=new T.Mesh(new T.CylinderGeometry(4.2,4.2,1.5,40),std("#5E635F",.45,.7));
+      etw.rotation.z=Math.PI/2;etw.position.set(x0+(n-1)*sp+sp*.9,AXIS,bayZ);rotorGroup.add(etw);
+      /* the hinged cover over the wheels: strips of plate with a slot at each thumbwheel */
+      const slots=names.map((_,i)=>x0+i*sp+.95).sort((a,b)=>a-b),HALF=1.0;
+      let edge=bayL;
+      slots.concat([bayR+HALF]).forEach(sx=>{
+        const w=(sx-HALF)-edge;
+        if(w>.2)box(w,.4,6.6,black,edge+w/2,14.95,bayZ,coverGroup);
+        edge=sx+HALF;
+      });
+      cover=coverGroup;
+      coverEdge=box(bayW+.3,.6,.5,metal,(bayL+bayR)/2,15.1,bayZ+3.4,coverGroup);
       names.forEach((nm,i)=>{
-        const x=x0+i*sp;const g=new T.Group();g.position.set(x,11.2,-9.4);rotorGroup.add(g);
+        const x=x0+i*sp;
+        const g=new T.Group();g.position.set(x,AXIS,bayZ);rotorGroup.add(g);
         const spin=new T.Group();g.add(spin);
-        const body=new T.Mesh(new T.CylinderGeometry(3.9,3.9,3.2,48),std("#2B2F2C",.5,.4));body.rotation.z=Math.PI/2;spin.add(body);
-        const tyreG=new T.CylinderGeometry(4.25,4.25,1.9,52,1,true);const tyre=new T.Mesh(tyreG,new T.MeshStandardMaterial({map:tyreTex,roughness:.6}));tyre.rotation.z=-Math.PI/2;tyre.position.x=-.6;spin.add(tyre);
-        const thumb=new T.Mesh(new T.CylinderGeometry(5.6,5.6,.9,64),new T.MeshStandardMaterial({map:ridgeTex,roughness:.5,metalness:.6}));thumb.rotation.z=Math.PI/2;thumb.position.x=1.25;spin.add(thumb);
+        const body=new T.Mesh(new T.CylinderGeometry(RR*.86,RR*.86,1.9,48),std("#232623",.55,.35));
+        body.rotation.z=Math.PI/2;body.position.x=-.55;spin.add(body);
+        const ring=new T.Mesh(new T.CylinderGeometry(RR,RR,1.5,56,1,true),
+          new T.MeshStandardMaterial({map:tyreTex,roughness:.6}));
+        ring.rotation.z=-Math.PI/2;ring.position.x=-.55;spin.add(ring);
+        const thumb=new T.Mesh(new T.CylinderGeometry(RR*1.13,RR*1.13,.8,64),
+          new T.MeshStandardMaterial({map:ridgeTex,roughness:.45,metalness:.55}));
+        thumb.rotation.z=Math.PI/2;thumb.position.x=.95;spin.add(thumb);
         thumb.userData={kind:"thumb",i};
-        // window (letter plate on cover) and slot surround
-        const frame=plane(2.3,2.3,new T.MeshBasicMaterial({color:"#6E746F"}),root);frame.rotation.x=-Math.PI/2;frame.position.set(x-.6,15.83,-8.6);
-        const winMat=new T.MeshBasicMaterial({map:letterTex("A","#111","#EDE9DC",false)});
-        const win=plane(1.9,1.9,winMat,root);win.rotation.x=-Math.PI/2;win.position.set(x-.6,15.85,-8.6);
-        const lab=plane(3.4,.8,new T.MeshBasicMaterial({map:labelTex(nm,"#C09A5B","#141615",256,64,40),transparent:true}),root);lab.rotation.x=-Math.PI/2;lab.position.set(x-.2,15.85,-6.3);
-        const hit=new T.Mesh(new T.BoxGeometry(1.4,3.2,5),new T.MeshBasicMaterial({visible:false}));hit.position.set(x+1.25,16.2,-9.4);hit.userData={kind:"thumb",i};root.add(hit);
+        /* slot in the cover for the thumbwheel, window for the letter */
+        const frame=plane(2,1.7,new T.MeshBasicMaterial({color:"#585D59"}),coverGroup);
+        frame.rotation.x=-Math.PI/2;frame.position.set(x-.7,15.17,bayZ-2.2);
+        const winMat=new T.MeshBasicMaterial({map:letterTex("A","#15120C","#E9E4D2",false)});
+        const win=plane(1.5,1.3,winMat,coverGroup);
+        win.rotation.x=-Math.PI/2;win.position.set(x-.7,15.19,bayZ-2.2);
+        const lab=plane(2.8,.65,new T.MeshBasicMaterial({map:labelTex(nm,"#C0A062","#141615",256,64,40),transparent:true}),coverGroup);
+        lab.rotation.x=-Math.PI/2;lab.position.set(x-.5,15.18,bayZ+2.3);
+        const hit=new T.Mesh(new T.BoxGeometry(1.8,3,6),new T.MeshBasicMaterial({visible:false}));
+        hit.position.set(x+.95,15.4,bayZ);hit.userData={kind:"thumb",i};root.add(hit);
         rotors.push({g,spin,win,winMat,frame,lab,hit,thumb,angle:0});
       });
     }
-    /* lamps + keys */
+    /* the power switch and lamp-test sockets, right of the rotor bay */
+    const knob=new T.Mesh(new T.CylinderGeometry(1.9,1.9,1.1,28),std("#1B1D1B",.5,.3));
+    knob.position.set(12.3,PANEL+.7,bayZ+1);root.add(knob);
+    const knobBar=box(.7,.35,3.1,metal,12.3,PANEL+1.3,bayZ+1,root);
+    [[-1.6,0],[1.6,0]].forEach(([dx,dz])=>{const s=new T.Mesh(new T.CylinderGeometry(.42,.42,.5,16),brass);
+      s.position.set(12.3+dx,PANEL+.35,bayZ+4.4+dz);root.add(s);});
+    /* maker's plate */
+    const plateMat=new T.MeshBasicMaterial({map:labelTex("ENIGMA","#C0A062","#141615",512,80,48)});
+    const nameplate=plane(7.5,1.2,plateMat,root);
+    nameplate.rotation.x=-Math.PI/2;nameplate.position.set(-8,PANEL+.28,bayZ+5.4);
+
+    /* ---- lampboard and keyboard, QWERTZ, three staggered rows ---- */
     const lamps={},keys={};
-    const lampOff=L=>letterTex(L,"#6A6F6A","#1C1E1C",true),lampOn=L=>letterTex(L,"#3A2408","#FFD37A",true);
+    const lampOff=L=>letterTex(L,"#AEB3AC","#1E211E",true),lampOn=L=>letterTex(L,"#3A2408","#FFD37A",true);
+    const PITCH=3.35, ROWOFF=[0,1.7,.55];
     QW.forEach((row,r)=>[...row].forEach((L,i)=>{
-      const x=(i-(row.length-1)/2)*3.35;
-      // lamp window
-      const ring=new T.Mesh(new T.CylinderGeometry(1.35,1.35,.12,32),metal);ring.position.set(x,12.3,-1.9+r*2.9);root.add(ring);
-      const m=new T.MeshBasicMaterial({map:lampOff(L)});const lamp=new T.Mesh(new T.CircleGeometry(1.1,32),m);lamp.rotation.x=-Math.PI/2;lamp.position.set(x,12.38,-1.9+r*2.9);root.add(lamp);
-      const glow=new T.PointLight("#FFB84D",0,9);glow.position.set(x,13.5,-1.9+r*2.9);root.add(glow);
+      const x=(i-(row.length-1)/2)*PITCH+ROWOFF[r]-.55;
+      /* lamp: a bezel set into the plate */
+      const lz=-4.0+r*3.1;
+      const bez=new T.Mesh(new T.CylinderGeometry(1.32,1.32,.3,32),metal);bez.position.set(x,PANEL+.3,lz);root.add(bez);
+      const m=new T.MeshBasicMaterial({map:lampOff(L)});
+      const lamp=new T.Mesh(new T.CircleGeometry(1.05,32),m);lamp.rotation.x=-Math.PI/2;lamp.position.set(x,PANEL+.46,lz);root.add(lamp);
+      const glow=new T.PointLight("#FFB84D",0,10);glow.position.set(x,PANEL+1.6,lz);root.add(glow);
       lamps[L]={m,glow};
-      // key
-      const kg=new T.Group();kg.position.set(x,12.25,7.2+r*3.1);root.add(kg);
-      const stem=new T.Mesh(new T.CylinderGeometry(.35,.35,1.6,12),metal);stem.position.y=.8;kg.add(stem);
-      const cap=new T.Mesh(new T.CylinderGeometry(1.25,1.25,.55,36),[std("#1A1C1A",.5,.2),new T.MeshStandardMaterial({map:letterTex(L,"#F2F3EF","#161816",true),roughness:.4}),std("#111",.5)]);cap.position.y=1.9;cap.rotation.y=Math.PI/2;kg.add(cap);
-      const rim=new T.Mesh(new T.TorusGeometry(1.3,.14,10,36),metal);rim.rotation.x=Math.PI/2;rim.position.y=1.98;kg.add(rim);
-      kg.userData={kind:"key",L};keys[L]={g:kg,y0:12.25};
+      /* key: a round bakelite cap on a plated stem */
+      const kz=4.7+r*3.2;
+      const kg=new T.Group();kg.position.set(x,PANEL+.2,kz);root.add(kg);
+      const collar=new T.Mesh(new T.CylinderGeometry(1.15,1.15,.35,28),metal);collar.position.y=.1;kg.add(collar);
+      const stem=new T.Mesh(new T.CylinderGeometry(.34,.34,1.5,14),metal);stem.position.y=.85;kg.add(stem);
+      const cap=new T.Mesh(new T.CylinderGeometry(1.18,1.1,.5,36),
+        [std("#131513",.45,.15),new T.MeshStandardMaterial({map:letterTex(L,"#EDEEE9","#131513",true),roughness:.35}),std("#0E100E",.5)]);
+      cap.position.y=1.75;cap.rotation.y=Math.PI/2;kg.add(cap);
+      const rim=new T.Mesh(new T.TorusGeometry(1.2,.11,10,36),metal);rim.rotation.x=Math.PI/2;rim.position.y=1.82;kg.add(rim);
+      kg.userData={kind:"key",L};keys[L]={g:kg,y0:PANEL+.2};
     }));
-    /* plugboard sockets on the front panel */
+
+    /* ---- Steckerbrett on the front face: letter above a vertical pair of jacks ---- */
     const sockets={};
+    const sbH=11.2,sbY=6.9,sbZ=D/2+.05;
+    box(W-5.6,sbH,.7,black,0,sbY,sbZ-.4,root);
+    [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sy])=>{
+      const s=new T.Mesh(new T.CylinderGeometry(.3,.3,.3,12),metal);
+      s.rotation.x=Math.PI/2;s.position.set(sx*(W/2-2.4),sbY+sy*(sbH/2-.8),sbZ);root.add(s);});
     QW.forEach((row,r)=>[...row].forEach((L,i)=>{
-      const x=(i-(row.length-1)/2)*3.35,y=8.5-r*2.75;
-      const g=new T.Group();g.position.set(x,y,14.78);root.add(g);
-      const pl=box(2.2,1.6,.12,std("#222523",.6,.3),0,0,0,g);
-      [-.5,.5].forEach(dx=>{const hole=new T.Mesh(new T.CylinderGeometry(.3,.3,.14,16),dark);hole.rotation.x=Math.PI/2;hole.position.set(dx,.15,.04);g.add(hole);});
-      const lab=plane(1,.6,new T.MeshBasicMaterial({map:letterTex(L,"#B9C0BA",null,false,64,.8),transparent:true}),g);lab.position.set(0,-.55,.08);
+      const x=(i-(row.length-1)/2)*PITCH+ROWOFF[r]-.55,y=sbY+3.3-r*3.3;
+      const g=new T.Group();g.position.set(x,y,sbZ);root.add(g);
+      const pl=box(2.3,2.9,.14,std("#1C1F1D",.6,.25),0,0,0,g);
+      const lab=plane(1.2,.9,new T.MeshBasicMaterial({map:letterTex(L,"#D8DCD6",null,false,64,.85),transparent:true}),g);
+      lab.position.set(0,1.05,.1);
+      [[.55],[-.45]].forEach(([dy])=>{
+        const ringM=new T.Mesh(new T.TorusGeometry(.36,.09,8,20),metal);ringM.position.set(0,dy-.5,.1);g.add(ringM);
+        const hole=new T.Mesh(new T.CylinderGeometry(.27,.27,.16,14),dark);hole.rotation.x=Math.PI/2;hole.position.set(0,dy-.5,.1);g.add(hole);});
       g.userData={kind:"socket",L};sockets[L]={g,pl};
     }));
     const cableGroup=new T.Group();root.add(cableGroup);
-    const CAB=["#C9A15A","#9DB8C8","#C98B7A","#A8C49A","#C7B3D6","#D9C27A","#8FB7A8","#D69AA6","#B0A58E","#9AA7D6","#C4C4B4","#D8A86A","#8AC0C8"];
+    const CAB=["#8C8378","#6E6A60","#7E7466","#5F5A50","#8A8072","#726C60","#837A6C","#665F55","#7A7264","#6B6458","#88806F","#6F695C","#7D7568"];
     function setPlugs(pairs,sel){
       while(cableGroup.children.length)cableGroup.remove(cableGroup.children[0]);
       const used=new Set(pairs.join(""));
-      Object.entries(sockets).forEach(([L,s])=>{s.pl.material=std(sel===L?"#F2A93B":used.has(L)?"#3A3F3B":"#222523",.6,.3);});
+      Object.entries(sockets).forEach(([L,s])=>{s.pl.material=std(sel===L?"#F2A93B":used.has(L)?"#343833":"#1C1F1D",.6,.25);});
       pairs.forEach((p,i)=>{
-        const a=sockets[p[0]].g.position,b=sockets[p[1]].g.position;const col=CAB[i%13];
-        const A=new T.Vector3(a.x,a.y+.15,a.z+.4),B=new T.Vector3(b.x,b.y+.15,b.z+.4);
-        const sag=2.2+Math.abs(a.x-b.x)*.08;
-        const curve=new T.CatmullRomCurve3([A,new T.Vector3(A.x,A.y-.8,A.z+1.6),new T.Vector3((A.x+B.x)/2,Math.min(A.y,B.y)-sag,Math.max(A.z,B.z)+2.8),new T.Vector3(B.x,B.y-.8,B.z+1.6),B]);
-        const tube=new T.Mesh(new T.TubeGeometry(curve,40,.2,8,false),std(col,.55));cableGroup.add(tube);
-        [A,B].forEach(P=>{const plug=new T.Mesh(new T.CylinderGeometry(.42,.42,1,16),std("#161816",.4,.3));plug.rotation.x=Math.PI/2;plug.position.set(P.x,P.y,P.z+.1);cableGroup.add(plug);});
+        const a=sockets[p[0]].g.position,b=sockets[p[1]].g.position,col=CAB[i%13];
+        const A=new T.Vector3(a.x,a.y-.5,a.z+.5),B=new T.Vector3(b.x,b.y-.5,b.z+.5);
+        const sag=2.6+Math.abs(a.x-b.x)*.09;
+        const curve=new T.CatmullRomCurve3([A,new T.Vector3(A.x,A.y-1.1,A.z+1.8),
+          new T.Vector3((A.x+B.x)/2,Math.min(A.y,B.y)-sag,Math.max(A.z,B.z)+3.2),
+          new T.Vector3(B.x,B.y-1.1,B.z+1.8),B]);
+        cableGroup.add(new T.Mesh(new T.TubeGeometry(curve,40,.19,8,false),std(col,.75)));
+        [A,B].forEach(P=>{const plug=new T.Mesh(new T.CylinderGeometry(.62,.52,1.5,18),std("#121412",.45,.25));
+          plug.rotation.x=Math.PI/2;plug.position.set(P.x,P.y+.5,P.z+.45);cableGroup.add(plug);});
       });
       S.render();
     }
-    /* state setters */
+
+    /* ---- the tour's pointer: a pulsing ring over a key or a socket ---- */
+    const hiGroup=new T.Group();root.add(hiGroup);
+    let hiOn=false;
+    function highlight(spec){
+      while(hiGroup.children.length)hiGroup.remove(hiGroup.children[0]);
+      if(hiOn){S.loop(false);hiOn=false;}
+      if(spec){
+        const ring=(x,y,z,flat)=>{
+          const m=new T.Mesh(new T.TorusGeometry(1.75,.18,10,34),
+            new T.MeshBasicMaterial({color:"#F2A93B",transparent:true,opacity:.9}));
+          if(flat)m.rotation.x=-Math.PI/2;
+          m.position.set(x,y,z);hiGroup.add(m);
+        };
+        (spec.keys||[]).forEach(L=>{const k=keys[L];if(k)ring(k.g.position.x,k.g.position.y+2.6,k.g.position.z,true);});
+        (spec.sockets||[]).forEach(L=>{const so=sockets[L];if(so)ring(so.g.position.x,so.g.position.y-.35,so.g.position.z+1,false);});
+        if(hiGroup.children.length){S.loop(true);hiOn=true;}
+      }
+      S.render();
+    }
+    S.frames.push(t=>{
+      if(!hiOn)return;
+      const k=(Math.sin(t/240)+1)/2, sc=1+k*.32;
+      hiGroup.children.forEach(m=>{m.scale.set(sc,sc,sc);m.material.opacity=.3+.6*(1-k);});
+    });
+
+    /* ---- state ---- */
     let ringStyle="L",curPos=[];
     function setPositions(pos,style){
       ringStyle=style||ringStyle;curPos=pos.slice();
       pos.forEach((p,i)=>{const R=rotors[i];if(!R)return;
         const txt=ringStyle==="N"?String(p+1).padStart(2,"0"):String.fromCharCode(65+p);
-        R.winMat.map=letterTex(txt,"#111","#EDE9DC",false,128,txt.length>1?.45:.6);R.winMat.needsUpdate=true;
-        // spin so letter p sits under the window (tyre letter i centred at u=(i+.5)/26; the top is u=.75 at rest)
-        let target=-(3*Math.PI/2-TAU*(p+.5)/26);let cur=R.spin.rotation.x;while(target-cur>Math.PI)target-=TAU;while(target-cur<-Math.PI)target+=TAU;
+        R.winMat.map=letterTex(txt,"#15120C","#E9E4D2",false,128,txt.length>1?.45:.6);R.winMat.needsUpdate=true;
+        let target=-(3*Math.PI/2-TAU*(p+.5)/26);let cur=R.spin.rotation.x;
+        while(target-cur>Math.PI)target-=TAU;while(target-cur<-Math.PI)target+=TAU;
         S.tween(R.spin.rotation,"x",target,140);
       });
       S.render();
@@ -709,17 +892,18 @@ window.Sim3D=(function(){
     let lit=null,down=null;
     function press(L,out){
       if(down)release();
-      down=L;const k=keys[L];S.tween(k.g.position,"y",k.y0-.55,70);
-      lit=out;lamps[out].m.map=lampOn(out);lamps[out].m.needsUpdate=true;lamps[out].glow.intensity=1.4;S.render();
+      down=L;const k=keys[L];S.tween(k.g.position,"y",k.y0-.5,70);
+      lit=out;lamps[out].m.map=lampOn(out);lamps[out].m.needsUpdate=true;lamps[out].glow.intensity=1.5;S.render();
     }
     function release(){
       if(down){const k=keys[down];S.tween(k.g.position,"y",k.y0,110);down=null;}
       if(lit){lamps[lit].m.map=lampOff(lit);lamps[lit].m.needsUpdate=true;lamps[lit].glow.intensity=0;lit=null;}S.render();
     }
-    function setModel(text){plateMat.map=labelTex(text,"#C09A5B","#141615",768,80,40);plateMat.needsUpdate=true;S.render();}
-    function setCover(on){cover.visible=on;coverEdge.visible=on;rotors.forEach(R=>{R.win.visible=on;R.frame.visible=on;R.lab.visible=on;});S.render();}
-    /* input */
-    const pickables=()=>[...Object.values(keys).map(k=>k.g),...Object.values(sockets).map(s=>s.g),...rotors.map(r=>r.hit),...rotors.map(r=>r.thumb)];
+    function setModel(text){plateMat.map=labelTex(text,"#C0A062","#141615",768,80,40);plateMat.needsUpdate=true;S.render();}
+    function setCover(on){coverGroup.visible=on;S.render();}
+    /* ---- input ---- */
+    const pickables=()=>[...Object.values(keys).map(k=>k.g),...Object.values(sockets).map(s=>s.g),
+      ...rotors.map(r=>r.hit),...rotors.map(r=>r.thumb)];
     let drag=null;const el=S.renderer.domElement;
     el.addEventListener("pointerdown",e=>{
       const o=S.pick(e,pickables());if(!o)return;
@@ -735,53 +919,82 @@ window.Sim3D=(function(){
     const end=e=>{if(!drag)return;if(drag.kind==="key")api.release();if(drag.kind==="thumb"&&!drag.moved)api.turn(drag.i,1);drag=null;controls.enabled=true;};
     el.addEventListener("pointerup",end);el.addEventListener("pointercancel",end);
     el.addEventListener("wheel",e=>{const o=S.pick(e,pickables());if(o&&o.userData.kind==="thumb"){e.preventDefault();e.stopImmediatePropagation();api.turn(o.userData.i,e.deltaY>0?1:-1);}},{capture:true,passive:false});
-    const views={operator:[[0,50,56],[0,9,1]],rotors:[[4,36,14],[0,13,-8]],plugboard:[[0,12,66],[0,6,14]],top:[[0,90,14],[0,10,3]]};
-    function view(name,ms){const v=views[name];if(v)S.fly(v[0],v[1],ms);}
-    camera.position.set(...views.operator[0]);controls.target.set(...views.operator[1]);controls.update();
-    S.resize();
-    return {setRotors:(names)=>{buildRotors(names);setPositions(curPos.length===names.length?curPos:names.map(()=>0));},setPositions,press,release,setPlugs,setModel,setCover,view,resize:S.resize};
+    const views={operator:[[13,40,74],[9,10,-1]],rotors:[[7,27,14],[3,13.5,-8]],
+      plugboard:[[6,12,54],[6,6.5,13]],top:[[8,54,4],[8,11,-1]]};
+    return {setRotors:(names)=>{buildRotors(names);setPositions(curPos.length===names.length?curPos:names.map(()=>0));},
+      setPositions,press,release,setPlugs,setModel,setCover,highlight,views,root};
   }
 
   /* =============================== BOMBE =============================== */
-  function Bombe3D(container){
-    const S=Stage(container,{bg:"#0C0F0D",fov:32,minD:60,maxD:900});
-    const {scene,camera,controls}=S;controls.maxPolarAngle=Math.PI*.55;
-    const root=new T.Group();scene.add(root);
-    const floor=new T.Mesh(new T.PlaneGeometry(900,900),std("#161A17",.95));floor.rotation.x=-Math.PI/2;root.add(floor);
-    const cab=std("#262B28",.75,.3),cabDark=std("#161A18",.8,.2),steel=std("#9AA29C",.35,.75);
-    // cabinet 210 wide, 196 high, 62 deep; front at z=+31
-    box(210,196,62,cab,0,98,0,root);
-    box(214,4,66,cabDark,0,197,0,root);box(214,6,66,cabDark,0,3,0,root);
-    box(186,168,1,cabDark,-10,112,31.2,root);           // drum panel
-    box(18,168,1,cabDark,94,112,31.2,root);             // right-hand end panel
-    const faceTex=canvasTex("drumface",256,256,(g,w)=>{g.fillStyle="#D8D6CA";g.beginPath();g.arc(w/2,w/2,w/2,0,TAU);g.fill();g.fillStyle="#2B2F2C";g.beginPath();g.arc(w/2,w/2,w*.22,0,TAU);g.fill();
-      g.fillStyle="#1A1A1A";g.font=`600 26px ${MONO}`;g.textAlign="center";g.textBaseline="middle";
-      for(let i=0;i<26;i++){const a=i/26*TAU;g.save();g.translate(w/2+Math.sin(a)*w*.39,w/2-Math.cos(a)*w*.39);g.rotate(a);g.fillText(String.fromCharCode(65+i),0,0);g.restore();}
-      for(let i=0;i<26;i++){const a=(i+.5)/26*TAU;g.strokeStyle="#8A8A80";g.lineWidth=2;g.beginPath();g.moveTo(w/2+Math.sin(a)*w*.3,w/2-Math.cos(a)*w*.3);g.lineTo(w/2+Math.sin(a)*w*.47,w/2-Math.cos(a)*w*.47);g.stroke();}});
-    const faceOn=new T.MeshBasicMaterial({map:faceTex}),faceOff=new T.MeshBasicMaterial({map:faceTex,color:"#4A4D48"});
-    const drumSide=std("#7E8680",.4,.7),drumSideOff=std("#3A3E3B",.6,.4);
+  /* The Turing-Welchman Bombe: 2.1 m wide, 1.98 m high, 0.61 m deep, 108 drum positions in
+     three banks of twelve triplets (Wikipedia, Bombe). Drums are colour-coded by the Enigma
+     rotor they emulate, and the cabinet's bronze metalwork is what earned it "Bronze Goddess". */
+  function buildBombe(S,root){
+    const {scene,camera,controls}=S;
+    const cab=std("#24231F",.85,.15), cabDark=std("#141413",.9,.1),
+          bronze=std("#7C5F33",.5,.75), steel=std("#9AA29C",.35,.75);
+    box(210,196,61,cab,0,98,0,root);                      // the cabinet
+    box(214,5,65,bronze,0,197,0,root);                    // capping rail
+    box(214,7,65,cabDark,0,3.5,0,root);                   // plinth
+    [[-92,24],[92,24],[-92,-24],[92,-24]].forEach(([x,z])=>{
+      const c=new T.Mesh(new T.CylinderGeometry(4,4,3,16),std("#1A1A18",.7,.3));
+      c.rotation.z=Math.PI/2;c.position.set(x,4,z);root.add(c);});  // castors
+    box(178,158,1,cabDark,-12,97,30.7,root);              // drum panel
+    box(26,158,1,cab,92,97,30.7,root);                    // right-hand panel
+    [176,124,70,16].forEach(y=>box(180,5,3,bronze,-12,y,31.6,root));  // shelf rails
+    box(4,164,3,bronze,-102,97,31.6,root);box(4,164,3,bronze,78,97,31.6,root);
+    /* drum faces: the wheel's colour, white letters round the rim, a steel boss */
+    const WHEEL={I:"#B03A2E",II:"#6E2B22",III:"#1E7A45",IV:"#CBA135",V:"#7A5320",
+                 VI:"#1F4E8C",VII:"#17181A",VIII:"#B9BEC2"};
+    const drumTex=col=>canvasTex("drum|"+col,384,384,(g,w)=>{
+      const c=w/2;
+      g.fillStyle=col;g.beginPath();g.arc(c,c,c,0,TAU);g.fill();
+      g.strokeStyle="rgba(255,255,255,.22)";g.lineWidth=3;g.beginPath();g.arc(c,c,w*.47,0,TAU);g.stroke();
+      g.fillStyle="rgba(0,0,0,.3)";g.beginPath();g.arc(c,c,w*.27,0,TAU);g.fill();
+      g.fillStyle="#C9CDC7";g.beginPath();g.arc(c,c,w*.13,0,TAU);g.fill();
+      g.fillStyle="#31332F";g.beginPath();g.arc(c,c,w*.055,0,TAU);g.fill();
+      g.fillStyle="#FAF8F2";g.font=`700 34px ${MONO}`;g.textAlign="center";g.textBaseline="middle";
+      for(let i=0;i<26;i++){const a=i/26*TAU;g.save();
+        g.translate(c+Math.sin(a)*w*.385,c-Math.cos(a)*w*.385);g.rotate(a);g.fillText(String.fromCharCode(65+i),0,0);g.restore();}
+      for(let i=0;i<26;i++){const a=(i+.5)/26*TAU;g.fillStyle="#E4E7E0";
+        g.beginPath();g.arc(c+Math.sin(a)*w*.205,c-Math.cos(a)*w*.205,4,0,TAU);g.fill();}});
+    const faceCache={},sideCache={};
+    const faceMat=col=>faceCache[col]||(faceCache[col]=new T.MeshBasicMaterial({map:drumTex(col)}));
+    const sideMat=col=>sideCache[col]||(sideCache[col]=std(col,.55,.35));
+    const faceOn=faceMat("#B9BEC2"),faceOff=new T.MeshBasicMaterial({map:drumTex("#3A3C38"),color:"#6A6C68"});
+    const drumSide=std("#7E8680",.4,.7),drumSideOff=std("#33352F",.7,.3);
     const idxMat=new T.MeshBasicMaterial({color:"#F2A93B"});
     const stacks=[];
     for(let s=0;s<36;s++){
-      const bank=Math.floor(s/12),col=s%12;const x=-94+col*15.2,yTop=182-bank*54;
+      const bank=Math.floor(s/12),col=s%12;const x=-94+col*15.2,yTop=166-bank*54;
       const drums=[];
       for(let d=0;d<3;d++){
-        const y=yTop-d*15;const g=new T.Group();g.position.set(x,y,32);root.add(g);
-        const body=new T.Mesh(new T.CylinderGeometry(6.2,6.2,3,40),drumSideOff);body.rotation.x=Math.PI/2;body.position.z=1.5;g.add(body);
-        const face=new T.Mesh(new T.CircleGeometry(6,40),faceOff);face.position.z=3.05;g.add(face);
-        const pointer=new T.Mesh(new T.ConeGeometry(.9,1.8,3),idxMat);pointer.rotation.z=Math.PI;pointer.position.set(x,y+7.4,33.5);pointer.visible=false;root.add(pointer);
+        const y=yTop-d*14.6;const g=new T.Group();g.position.set(x,y,31.5);root.add(g);
+        const body=new T.Mesh(new T.CylinderGeometry(6.35,6.35,3.4,40),drumSideOff);
+        body.rotation.x=Math.PI/2;body.position.z=1.7;g.add(body);
+        const face=new T.Mesh(new T.CircleGeometry(6.2,40),faceOff);face.position.z=3.45;g.add(face);
+        const pointer=new T.Mesh(new T.ConeGeometry(.85,1.7,3),idxMat);pointer.rotation.z=Math.PI;
+        pointer.position.set(x,y+7.5,33.4);pointer.visible=false;root.add(pointer);
         drums.push({g,body,face,pointer,rot:0});
       }
-      const lab=plane(13,3.2,new T.MeshBasicMaterial({transparent:true,opacity:0}),root);lab.position.set(x,yTop+10.3,31.8);
+      const lab=plane(13,3.2,new T.MeshBasicMaterial({transparent:true,opacity:0}),root);
+      lab.position.set(x,yTop+9.6,31.4);
       stacks.push({drums,lab,x,yTop,used:false,k:0});
     }
     // right-hand end: indicator drums + test register
-    const ind=[];for(let i=0;i<3;i++){const m=new T.MeshBasicMaterial({map:letterTex("A","#111","#EDE9DC",false)});const p=plane(8,8,m,root);p.position.set(94,168-i*11,31.9);ind.push(m);}
-    const indLab=plane(16,3,new T.MeshBasicMaterial({map:labelTex("INDICATOR","#C09A5B",null,512,96,52),transparent:true}),root);indLab.position.set(94,178,31.9);
-    const orderLab=new T.MeshBasicMaterial({map:labelTex("I-II-III","#E4E8E3",null,512,96,60),transparent:true});const ol=plane(16,3,orderLab,root);ol.position.set(94,134,31.9);
-    const regLab=plane(16,3,new T.MeshBasicMaterial({map:labelTex("TEST REGISTER","#C09A5B",null,512,96,44),transparent:true}),root);regLab.position.set(94,124,31.9);
-    const regs=[];for(let i=0;i<26;i++){const c=i%2,r=Math.floor(i/2);const m=new T.MeshBasicMaterial({map:letterTex(String.fromCharCode(65+i),"#7A827C","#1E2320",true,64,.62)});
-      const p=new T.Mesh(new T.CircleGeometry(2.6,24),m);p.position.set(89.5+c*9,117-r*7.1,31.9);root.add(p);regs.push(m);}
+    box(24,44,1.4,cabDark,92,148,31.4,root);
+    const ind=[];for(let i=0;i<3;i++){const m=new T.MeshBasicMaterial({map:letterTex("A","#15120C","#E9E4D2",false)});
+      const p=plane(7.5,7.5,m,root);p.position.set(92,156-i*11,32.2);ind.push(m);}
+    const indLab=plane(17,3,new T.MeshBasicMaterial({map:labelTex("INDICATOR","#C0A062",null,512,96,52),transparent:true}),root);
+    indLab.position.set(92,166,32.2);
+    const orderLab=new T.MeshBasicMaterial({map:labelTex("I-II-III","#E4E8E3",null,512,96,60),transparent:true});
+    const ol=plane(17,3,orderLab,root);ol.position.set(92,118,32.2);
+    const regLab=plane(19,3,new T.MeshBasicMaterial({map:labelTex("TEST REGISTER","#C0A062",null,512,96,44),transparent:true}),root);
+    regLab.position.set(92,108,32.2);
+    box(24,72,1.4,cabDark,92,68,31.4,root);
+    const regs=[];for(let i=0;i<26;i++){const c=i%2,r=Math.floor(i/2);
+      const m=new T.MeshBasicMaterial({map:letterTex(String.fromCharCode(65+i),"#7A827C","#191A18",true,64,.62)});
+      const p=new T.Mesh(new T.CircleGeometry(2.6,24),m);p.position.set(87.5+c*9,100-r*6.6,32.2);root.add(p);regs.push(m);}
     // back: jacks for each stack, letter commons, diagonal board
     const backPanel=box(200,180,1,cabDark,0,104,-31.2,root);
     const back=new T.Group();root.add(back);
@@ -797,7 +1010,7 @@ window.Sim3D=(function(){
       const hub={};letters.forEach((L,i)=>{const x=-40+i*(130/Math.max(1,letters.length-1||1));const hb=box(6,6,3,std("#2C3330",.6,.3),x,26,-33,back);
         const lb=plane(5,5,new T.MeshBasicMaterial({map:letterTex(String.fromCharCode(65+L),"#F2F3EF","#2C3330",false,64,.7)}),back);lb.position.set(x,26,-34.6);lb.rotation.y=Math.PI;hub[L]={x,col:LC[i%LC.length]};});
       stacks.forEach((st,i)=>{const e=menu[i];st.used=!!e;st.k=e?e.k:0;
-        st.drums.forEach(d=>{d.face.material=e?faceOn:faceOff;d.body.material=e?drumSide:drumSideOff;d.pointer.visible=!!e;});
+        st.drums.forEach(d=>{d.pointer.visible=!!e;});
         if(e){st.lab.material=new T.MeshBasicMaterial({map:labelTex(`${String.fromCharCode(65+e.a)}·${String.fromCharCode(65+e.b)} +${e.k}`,"#F2A93B",null,512,128,64),transparent:true});
           [[e.a,-5],[e.b,5]].forEach(([L,dy])=>{const jy=st.yTop-15+dy;const jack=box(4,3,2,std("#101311",.5),st.x,jy,-32.4,back);
             const A=new T.Vector3(st.x,jy,-33.4),H=hub[L];const B=new T.Vector3(H.x,29,-34.5);
@@ -805,13 +1018,27 @@ window.Sim3D=(function(){
             back.add(new T.Mesh(new T.TubeGeometry(c,40,.7,8,false),std(H.col,.55)));});}
         else st.lab.material=new T.MeshBasicMaterial({transparent:true,opacity:0});
       });
+      paintDrums();
       letters.forEach(L=>{const H=hub[L];const c=new T.CatmullRomCurve3([new T.Vector3(H.x,23,-34.5),new T.Vector3(H.x,12,-44),new T.Vector3((H.x-80)/2,10,-46),new T.Vector3(-70,28,-38)]);
         const m=new T.Mesh(new T.TubeGeometry(c,30,.45,6,false),std("#8B8F8A",.6,.3));m.visible=diagOn;back.add(m);diagCables.push(m);});
       S.render();
     }
+    /* each row of a bank carries the wheel in that place of the order, in its own colour */
+    let wheelOrder=["I","II","III"];
+    function paintDrums(){
+      stacks.forEach(st=>st.drums.forEach((d,i)=>{
+        const col=WHEEL[wheelOrder[i]]||"#B9BEC2";
+        d.face.material=st.used?faceMat(col):faceOff;
+        d.body.material=st.used?sideMat(col):drumSideOff;}));
+      S.render();
+    }
     function drumTo(d,letter){let target=TAU*letter/26;let cur=d.g.rotation.z%TAU;d.g.rotation.z=cur;while(target-cur>Math.PI)target-=TAU;while(target-cur<-Math.PI)target+=TAU;S.tween(d.g.rotation,"z",target,120);}
     function setDrums(order,l,m,r){
-      stacks.forEach(st=>{if(!st.used)return;drumTo(st.drums[0],(r+st.k)%26);drumTo(st.drums[1],m);drumTo(st.drums[2],l);});
+      if(order&&order.join()!==wheelOrder.join()){wheelOrder=order.slice();paintDrums();}
+      /* on the real machine the top drum of a triplet is the Enigma's left-hand rotor and the
+         bottom one its right-hand (fast) rotor, which carries the menu's offset */
+      stacks.forEach(st=>{if(!st.used)return;
+        drumTo(st.drums[0],l);drumTo(st.drums[1],m);drumTo(st.drums[2],(r+st.k)%26);});
       [l,m,r].forEach((v,i)=>{ind[i].map=letterTex(String.fromCharCode(65+v),"#111","#EDE9DC",false);ind[i].needsUpdate=true;});
       orderLab.map=labelTex(order.join("-"),"#E4E8E3",null,512,96,60);orderLab.needsUpdate=true;S.render();
     }
@@ -819,12 +1046,46 @@ window.Sim3D=(function(){
       regs[i].map=on?letterTex(L,"#3A2408",cand===i?"#9BE0B8":"#FFD37A",true,64,.62):letterTex(L,cand===i?"#9BE0B8":"#7A827C","#1E2320",true,64,.62);regs[i].needsUpdate=true;}S.render();}
     function setRunning(on){if(on===running)return;running=on;S.loop(on);}
     function setDiag(on){diagOn=on;diagCables.forEach(c=>c.visible=on);diagBox.visible=on;diagLab.visible=on;S.render();}
-    const views={front:[[0,100,395],[-4,100,0]],back:[[0,100,-350],[0,96,0]],indicator:[[150,140,150],[94,140,30]],close:[[-60,150,120],[-60,150,30]]};
-    function view(name,ms){const v=views[name];if(v)S.fly(v[0],v[1],ms);}
-    camera.position.set(...views.front[0]);controls.target.set(...views.front[1]);controls.update();S.resize();
-    return {setMenu,setDrums,setRegister,setRunning,setDiag,view,resize:S.resize};
+    const views={front:[[55,100,345],[55,98,0]],back:[[-45,100,-330],[-45,96,0]],
+      indicator:[[150,150,150],[100,140,28]],close:[[-36,138,138],[-36,136,30]]};
+    return {setMenu,setDrums,setRegister,setRunning,setDiag,views,root};
   }
-  return {Enigma3D,Bombe3D};
+
+  /* =============================== THE ROOM ===============================
+     One scene, one camera: the Bombe stands on the floor, the Enigma sits on a
+     table beside it, and switching machine flies the camera across. */
+  function Room(container,api){
+    const S=Stage(container,{bg:"#0A0D0B",fov:38,minD:20,maxD:1400});
+    S.controls.maxPolarAngle=Math.PI*.52;
+    S.scene.fog=new T.Fog("#0A0D0B",520,1750);
+    const floor=new T.Mesh(new T.PlaneGeometry(2400,2400),std("#161A17",.95));floor.rotation.x=-Math.PI/2;S.scene.add(floor);
+    const bombeRoot=new T.Group();S.scene.add(bombeRoot);
+    const enigmaRoot=new T.Group();enigmaRoot.position.set(268,74,126);enigmaRoot.rotation.y=-0.62;S.scene.add(enigmaRoot);
+    const lamp=new T.PointLight("#FFE6BC",.5,600);lamp.position.set(150,240,180);S.scene.add(lamp);
+    const B=buildBombe(S,bombeRoot),E=buildEnigma(S,enigmaRoot,api);
+
+    const ROOM=[[430,340,800],[205,70,30]];   /* both machines, biased left of the windows */
+    const wv=(root,v)=>{root.updateMatrixWorld(true);
+      const p=root.localToWorld(new T.Vector3(...v[0])),t=root.localToWorld(new T.Vector3(...v[1]));
+      return [[p.x,p.y,p.z],[t.x,t.y,t.z]];};
+    let focused="enigma";
+    function view(name,ms){
+      if(name==="room"){S.fly(ROOM[0],ROOM[1],ms||900);return;}
+      const m=E.views[name]?E:B.views[name]?B:null;if(!m)return;
+      focused=m===E?"enigma":"bombe";
+      const w=wv(m.root,m.views[name]);S.fly(w[0],w[1],ms||750);
+    }
+    function focus(machine,ms){
+      focused=machine;
+      view(machine==="enigma"?"operator":"front",ms);
+    }
+    S.scene.updateMatrixWorld(true);
+    const w0=wv(enigmaRoot,E.views.operator);
+    S.camera.position.set(...w0[0]);S.controls.target.set(...w0[1]);S.controls.update();S.resize();
+    return {enigma:E,bombe:B,view,focus,focused:()=>focused,
+      highlight:spec=>E.highlight(spec),resize:S.resize,render:S.render};
+  }
+  return {Room};
 })();
 
 </script>
@@ -841,10 +1102,44 @@ const letters=s=>(s||"").toUpperCase().replace(/[^A-Z]/g,"");
 let ringStyle="L";
 const fmtRing=i=>ringStyle==="N"?String(i+1).padStart(2,"0"):chr(i);
 
-/* ---------- tabs ---------- */
-let E3=null,B3=null;
-function showTab(name){$$("nav.tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===name));$$(".tab").forEach(t=>t.hidden=t.id!=="tab-"+name);if(name==="enigma"){requestAnimationFrame(drawCables);E3&&requestAnimationFrame(E3.resize);}if(name==="bombe"&&B3)requestAnimationFrame(B3.resize);window.scrollTo({top:0});}
-$$("nav.tabs button").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
+let ROOM=null,E3=null,B3=null;
+const smooth=()=>matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth";
+
+/* ---------- windows floating over the room ---------- */
+const PANELS=["enigma","intercepts","menu","bombe","check","about"];
+const oneAtATime=()=>matchMedia("(max-width:820px)").matches;
+const isOpen=name=>{const w=$("#tab-"+name);return !!w&&!w.hidden;};
+function setOpen(name,on){
+  const w=$("#tab-"+name);if(!w)return;
+  w.hidden=!on;
+  const b=$(`.dock button[data-panel="${name}"]`);b&&b.setAttribute("aria-pressed",String(!!on));
+}
+function openPanel(name,on=true){
+  if(on&&oneAtATime())PANELS.forEach(o=>{if(o!==name)setOpen(o,false);});
+  setOpen(name,on);
+  if(on){const w=$("#tab-"+name);w&&w.scrollIntoView({block:"nearest"});}
+}
+$$(".dock button").forEach(b=>b.addEventListener("click",()=>openPanel(b.dataset.panel,!isOpen(b.dataset.panel))));
+$$(".win-x").forEach(b=>b.addEventListener("click",()=>openPanel(b.dataset.close,false)));
+
+/* ---------- which machine the camera is on ---------- */
+let machine="enigma";
+function showMachine(name,ms){
+  if(name!=="room")machine=name;
+  $$("[data-machine]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.machine===name)));
+  $("#eCams").hidden=name!=="enigma";
+  $("#bCams").hidden=name!=="bombe";
+  if(ROOM){name==="room"?ROOM.view("room",ms):ROOM.focus(name,ms);}
+  else{$("#eFlat").hidden=name==="bombe";$("#bombeFace").hidden=name!=="bombe";requestAnimationFrame(drawCables);}
+  if(name!=="room"){openPanel(name);setOpen(name==="enigma"?"bombe":"enigma",false);}
+}
+$$("[data-machine]").forEach(b=>b.addEventListener("click",()=>showMachine(b.dataset.machine)));
+
+/* every "on to the next thing" button: face the right machine, open the right window */
+function goTo(name){
+  if(name==="enigma"||name==="bombe")showMachine(name);
+  openPanel(name);
+}
 
 /* =====================================================
    1. ENIGMA
@@ -1056,7 +1351,7 @@ function renderForms(){
       h("table",{},h("tr",{},h("th",{text:"Walzenlage"}),h("th",{text:"Ringstellung"}),h("th",{text:"Steckerverbindungen"}),h("th",{text:"UKW"})),
         h("tr",{},h("td",{text:m.day.rotors.join(" ")}),h("td",{text:[...m.day.rings].map(r=>String(idx(r)+1).padStart(2,"0")).join(" ")+" ("+m.day.rings+")"}),h("td",{text:m.day.plugs||"none"}),h("td",{text:m.day.refl}))),
       h("div",{text:`Message key used: ${m.key}${m.day.kenn?" · Kenngruppen: "+m.day.kenn.join(" "):""}`}));
-    const f=h("article",{class:"form"},
+    const f=h("article",{class:"form",id:"form-"+m.id},
       h("div",{class:"fhead"},h("b",{text:m.title}),h("span",{class:"level",text:m.level})),
       h("div",{class:"kv"},
         h("span",{text:"Network"}),h("span",{text:m.net}),
@@ -1067,7 +1362,7 @@ function renderForms(){
       h("div",{class:"intel"},h("strong",{text:"What Hut 6 knows: "}),m.intel),
       m.source?h("div",{class:"small"},"Source: ",h("a",{href:m.source.url,target:"_blank",rel:"noopener",style:"color:#2C5A75",text:m.source.name})):null,
       h("div",{class:"row"},
-        m.m4?null:h("button",{text:"Work on this message →",onclick:()=>{selectMessage(m.id);showTab("menu");}}),
+        m.m4?null:h("button",{id:"work-"+m.id,text:"Work on this message →",onclick:()=>{selectMessage(m.id);goTo("menu");}}),
         m.historical?h("button",{class:m.m4?"":"ghost",text:"Decode it on the Enigma",onclick:()=>decodeOnEnigma(m)}):null,
         h("button",{class:"ghost",text:"Show German key sheet",onclick:e=>{ks.hidden=!ks.hidden;e.target.textContent=ks.hidden?"Show German key sheet":"Hide key sheet";}})),
       ks);
@@ -1086,7 +1381,7 @@ function decodeOnEnigma(m){
   note.append(h("strong",{text:m.title+". "}),`The machine is set to the published key, with the windows at the Grundstellung ${m.grund}. Step 1: press "Type it on the machine" to type the encrypted message key ${m.encKey}. The lamps should spell ${m.key}.`,
     h("div",{class:"row",style:"margin-top:8px"},h("button",{class:"primary",text:`Step 2: set the windows to ${m.key} and load the message`,onclick:()=>{em.pos=[...m.key].map(idx);updWindows();tapeIn=tapeOut="";tapeStart=null;renderTape();$("#bulkText").value=m.m4?groups(m.ct,4):groups(m.ct);
       note.lastChild.replaceWith(h("div",{style:"margin-top:8px"},`Windows at ${m.key}. Press "Type it on the machine" and read the lamps. `,h("em",{text:"In English: "}),m.english));}})));
-  showTab("enigma");
+  goTo("enigma");
 }
 /* custom challenge from the Enigma pad */
 $("#makeChallenge").addEventListener("click",()=>{
@@ -1097,7 +1392,7 @@ $("#makeChallenge").addEventListener("click",()=>{
     day:{rotors:tapeStart.rotors,rings:tapeStart.rings.map(chr).join(""),plugs:tapeStart.plugs,refl:tapeStart.reflector},key:tapeStart.pos.map(chr).join(""),
     plain:tapeIn,ct:tapeOut,crib:tapeIn.slice(0,Math.min(16,tapeIn.length)),cribPos:0,kenn:"",len:tapeOut.length,
     intel:`You know the message starts ${tapeIn.slice(0,Math.min(16,tapeIn.length))}. Try that as the crib at position 1.`,english:"(your own message)"};
-  MSGS.push(m);renderForms();selectMessage(m.id);showTab("menu");
+  MSGS.push(m);renderForms();selectMessage(m.id);goTo("menu");
 });
 
 /* =====================================================
@@ -1212,7 +1507,7 @@ function renderMenu(){
     :A.loops===0?"No loops: nothing can contradict a guess, so the Bombe would stop everywhere. Use a longer crib or a different part of it.":"Only 1 loop: a weak menu. With the diagonal board you can still expect one or two stops per wheel order, most of them false. Without it, hundreds.";
 }
 $("#testSel").addEventListener("change",e=>{cur.test=+e.target.value;renderMenu();});
-$("#toBombe").addEventListener("click",()=>{loadBombe();showTab("bombe");});
+$("#toBombe").addEventListener("click",()=>{loadBombe();goTo("bombe");});
 
 /* =====================================================
    4. BOMBE
@@ -1242,7 +1537,9 @@ function buildFace(){
     }
   }
 }
+let bombeLoads=0;
 function loadBombe(){
+  bombeLoads++;
   const edges=currentMenu();const k0=Math.min(...edges.map(e=>e.k));
   const menu=edges.map(e=>({k:e.k-k0,a:e.a,b:e.b,ck:e.k}));
   const lettersSet=[...new Set(menu.flatMap(e=>[e.a,e.b]))];
@@ -1290,7 +1587,7 @@ function renderStops(){
       h("td",{text:i+1}),h("td",{text:s.order.join("-")}),h("td",{text:chr(s.l)+chr(s.m)+chr(s.r)}),h("td",{text:s.lit}),
       h("td",{text:s.cand!=null?chr(B.test)+"–"+chr(s.cand):"?"}),h("td",{text:real.join(" ")+(pt.length>real.length?`  (+${pt.length-real.length} self)`:"")}),
       h("td",{},h("span",{class:"pill "+(s.ok?"ok":"no"),text:s.ok?"consistent":"contradiction"})),
-      h("td",{},h("button",{text:"Check →",onclick:ev=>{ev.stopPropagation();loadCheck(s);showTab("check");}})));
+      h("td",{},h("button",{text:"Check →",onclick:ev=>{ev.stopPropagation();loadCheck(s);goTo("check");}})));
     tr.addEventListener("click",()=>{bSel=i;setPos(s.order,s.l,s.m,s.r);showRegister(s.testMask,s.cand,`Stop ${i+1}: ${s.lit} of 26 wires live. ${s.cand!=null?`${chr(B.test)} is plugged to ${chr(s.cand)} if this stop is right.`:""}`);renderStops();});
     tb.append(tr);
   });
@@ -1494,7 +1791,7 @@ $("#indBtn").addEventListener("click",()=>{
 });
 
 /* quick-load helper for the empty checking state */
-function quick(){const q=$("#chkQuick");q.innerHTML="";q.append(h("button",{text:"Go to the Bombe",onclick:()=>showTab("bombe")}));}
+function quick(){const q=$("#chkQuick");q.innerHTML="";q.append(h("button",{text:"Go to the Bombe",onclick:()=>goTo("bombe")}));}
 
 /* =====================================================
    GUIDED TOUR: break the weather report, start to finish
@@ -1503,74 +1800,146 @@ const tour=(()=>{
   const vis=sel=>{const e=typeof sel==="function"?sel():document.querySelector(sel);return e&&e.offsetParent!==null?e:null;};
   const pick=(...sels)=>()=>{for(const s of sels){const e=vis(s);if(e)return e;}return null;};
   const plugCount=()=>chk?(chk.plugs.match(/\S{2}/g)||[]).length:0;
+  /* the decrypt cell showing `shown` where the message wants `want` */
+  const decCell=(shown,want)=>()=>{
+    if(!chk||!chk.out||!chk.msg||!chk.msg.plain)return null;
+    const o=chk.out,pl=chk.msg.plain,cells=$$("#dec .pl button");
+    for(let k=0;k<o.length&&k<pl.length;k++)if(o[k]===shown&&pl[k]===want)return cells[k]||null;
+    return null;};
   const solved=()=>!!(chk&&chk.out&&chk.msg&&chk.out===chk.msg.plain);
   let mark={};
   const S=[
     {tab:"enigma",title:"Welcome to Hut 6",body:"In this tour you'll break a German weather report the way Bletchley Park did in 1940: type on an Enigma, line up a guessed word (a crib), wire up the Bombe, and read the message. It takes about 10 minutes. You can leave at any time and pick it up again from the Tour button."},
-    {tab:"enigma",target:pick("#e3d","#eFlat"),title:"1 · Press a key",body:"This is the Enigma. Click any key on the machine, or type a letter on your own keyboard. A lamp lights up with the encrypted letter while the key is held down.",
+    {tab:"enigma",lit:{keys:["A"]},press:"Press the lit key on the machine",title:"1 · Press a key",body:"This is the Enigma. Click any key on the machine, or type a letter on your own keyboard. A lamp lights up with the encrypted letter while the key is held down.",
       enter:()=>{mark.t=tapeIn.length;},wait:()=>tapeIn.length>mark.t,doIt:()=>{keyDown("A");setTimeout(keyUp,300);}},
-    {tab:"enigma",target:pick("#e3d","#eFlat"),title:"2 · The rotors move",body:"Now press A three times and watch both the lamps and the rotor windows. The right-hand rotor steps before every letter, so the same key gives a different letter each time.",
+    {tab:"enigma",lit:{keys:["A"]},press:"Press the lit A three times",title:"2 · The rotors move",body:"Now press A three times and watch both the lamps and the rotor windows. The right-hand rotor steps before every letter, so the same key gives a different letter each time.",
       enter:()=>{mark.t=tapeIn.length;},wait:()=>tapeIn.length>=mark.t+3,doIt:()=>{for(let i=0;i<3;i++){keyDown("A");keyUp();}}},
     {tab:"enigma",target:"#tapeOut",title:"3 · Enigma's weakness",body:"The operator's pad records what you typed and what lit up. Look closely: a letter never comes out as itself. That's because of the reflector, and it's the flaw the whole attack is built on."},
-    {tab:"enigma",target:pick("#plugText"),title:"4 · The plugboard",body:"The plugboard swaps pairs of letters on the way in and out, which is where most of Enigma's strength came from. Add one cable: click two sockets on the machine's front panel (the Plugboard camera button helps), or type a pair like AB here and press Set pairs.",
-      enter:()=>{E3&&E3.view("plugboard");},wait:()=>pairsOf(mcfg.plugs).length>0,doIt:()=>{$("#plugText").value="AB";$("#plugApply").click();}},
-    {tab:"intercepts",target:()=>vis(".form"),title:"5 · An intercept",body:"This is a real-style radio intercept: a weather station's morning forecast. Hut 6 knew these forecasts always began WETTERVORHERSAGE (\"weather forecast\"). That guess is your crib. Click Work on this message.",
-      wait:()=>!$("#tab-menu").hidden&&cur.msg&&cur.msg.id==="wetter",doIt:()=>{selectMessage("wetter");showTab("menu");}},
-    {tab:"menu",target:()=>{const e=vis(".ctape-wrap");return e&&e.closest(".panel");},title:"6 · Line up the crib",body:"The crib sits under the ciphertext. Drag the Position slider and watch for red letters: a letter can't encrypt to itself, so any red position is impossible. When you've seen a few, put it back to position 1, where this forecast starts.",
+    {tab:"enigma",target:pick("#plugText"),click:"#plugApply",lit:{sockets:["A","B"]},press:"Click the two lit sockets, or type AB and Set pairs",title:"4 · The plugboard",body:"The plugboard swaps pairs of letters on the way in and out, which is where most of Enigma's strength came from. Add one cable: click two sockets on the machine's front panel (the Plugboard camera button helps), or type a pair like AB here and press Set pairs.",
+      enter:()=>{ROOM&&ROOM.view("plugboard");},wait:()=>pairsOf(mcfg.plugs).length>0,doIt:()=>{$("#plugText").value="AB";$("#plugApply").click();}},
+    {tab:"intercepts",target:()=>vis(".form"),click:"#work-wetter",title:"5 · An intercept",body:"This is a real-style radio intercept: a weather station's morning forecast. Hut 6 knew these forecasts always began WETTERVORHERSAGE (\"weather forecast\"). That guess is your crib. Click Work on this message.",
+      wait:()=>isOpen("menu")&&cur.msg&&cur.msg.id==="wetter",doIt:()=>{selectMessage("wetter");goTo("menu");}},
+    {tab:"menu",target:()=>{const e=vis(".ctape-wrap");return e&&e.closest(".panel");},click:"#cribPos",press:"Drag the Position slider",title:"6 · Line up the crib",body:"The crib sits under the ciphertext. Drag the Position slider and watch for red letters: a letter can't encrypt to itself, so any red position is impossible. When you've seen a few, put it back to position 1, where this forecast starts.",
       enter:()=>{mark.moved=false;},wait:()=>{if(cur.pos!==0)mark.moved=true;return mark.moved&&cur.pos===0;},doIt:()=>{cur.pos=0;renderCrib();mark.moved=true;}},
     {tab:"menu",target:".menu-svg",title:"7 · The menu",body:"Each column of crib and ciphertext links two letters, and here those links are drawn as a graph. Amber links are loops. A loop lets the Bombe test a guess against itself, so more loops means fewer false alarms. The highlighted letter is where the Bombe will feed in its test current."},
-    {tab:"menu",target:"#toBombe",title:"8 · Wire up the Bombe",body:"Click Wire up the Bombe. Every link in the menu will get its own set of drums.",
-      wait:()=>!$("#tab-bombe").hidden&&B&&B.msg&&B.msg.id==="wetter",doIt:()=>{loadBombe();showTab("bombe");}},
-    {tab:"bombe",target:pick("#b3d","#bombeFace"),title:"9 · The Bombe",body:"Each lit stack of three drums is an Enigma without a plugboard, set a few steps ahead to match its link in the menu. Try the Back: menu cables button to see your menu wired up, then carry on."},
-    {tab:"bombe",target:"#bStep",title:"10 · One test",body:"Press Step one position. The machine tests one rotor setting. Watch the test register: with all 26 wires lit, every guess contradicted itself, so this setting is impossible.",
+    {tab:"menu",target:"#toBombe",click:"#toBombe",title:"8 · Wire up the Bombe",body:"Click Wire up the Bombe. Every link in the menu will get its own set of drums.",
+      enter:()=>{mark.b=bombeLoads;},wait:()=>bombeLoads>mark.b&&B&&B.msg&&B.msg.id==="wetter",doIt:()=>{loadBombe();goTo("bombe");}},
+    {tab:"bombe",click:"[data-bcam=back]",press:"Back: menu cables",title:"9 · The Bombe",body:"Each lit stack of three drums is an Enigma without a plugboard, set a few steps ahead to match its link in the menu. Try the Back: menu cables button to see your menu wired up, then carry on."},
+    {tab:"bombe",target:"#bStep",click:"#bStep",title:"10 · One test",body:"Press Step one position. The machine tests one rotor setting. Watch the test register: with all 26 wires lit, every guess contradicted itself, so this setting is impossible.",
       wait:()=>$$("#register .reg.on").length>0,doIt:()=>$("#bStep").click()},
-    {tab:"bombe",target:"#bRun",title:"11 · Run it",body:"Now press Run at full speed. It tries all 60 rotor orders, each at 17,576 positions. The real machine needed about 20 hours for that; here it takes about 10 seconds.",
+    {tab:"bombe",target:"#bRun",click:"#bRun",title:"11 · Run it",body:"Now press Run at full speed. It tries all 60 rotor orders, each at 17,576 positions. The real machine needed about 20 hours for that; here it takes about 10 seconds.",
       wait:()=>bStops.length>0&&!workers.length,doIt:()=>$("#bRun").click()},
-    {tab:"bombe",target:".tablewrap",title:"12 · A stop",body:"The Bombe stopped. A stop gives a rotor order, the drum positions, and the plug partners it could deduce. Press Check → on the consistent stop to try it on the checking machine.",
-      wait:()=>!$("#tab-check").hidden&&!!chk,doIt:()=>{const s=bStops.find(x=>x.ok);if(s){loadCheck(s);showTab("check");}}},
-    {tab:"check",target:"#cRingFind",title:"13 · The ring setting",body:"The Bombe can't see ring settings, so the text goes wrong wherever the middle rotor steps at the wrong moment. Click Find the ring setting, then press Use on the top row.",
+    {tab:"bombe",target:".tablewrap",click:"#stopsBody button",press:"Check → on the top stop",title:"12 · A stop",body:"The Bombe stopped. A stop gives a rotor order, the drum positions, and the plug partners it could deduce. Press Check → on the consistent stop to try it on the checking machine.",
+      wait:()=>!!chk,doIt:()=>{const s=bStops.find(x=>x.ok);if(s){loadCheck(s);goTo("check");}}},
+    {tab:"check",target:"#cRingFind",click:"#cRingFind",title:"13 · The ring setting",body:"The Bombe can't see ring settings, so the text goes wrong wherever the middle rotor steps at the wrong moment. Click Find the ring setting, then press Use on the top row.",
       enter:()=>{mark.r=chk?chk.rings.join():"";},wait:()=>chk&&chk.rings.join()!==mark.r,doIt:()=>{$("#cRingFind").click();setTimeout(()=>$(".rf button")?.click(),50);}},
-    {tab:"check",target:"#dec",title:"14 · Fix a letter",body:"Most of it reads, but some plug pairs are still missing. The message says WETTERVORHERSAGE, and the next word break should be an X, but it shows an I. Click that wrong letter, type X, press Suggest a plug, and apply the first suggestion.",
+    {tab:"check",target:"#dec",click:decCell("I","X"),press:"Click the lit letter, type X, then Suggest a plug",title:"14 · Fix a letter",body:"Most of it reads, but some plug pairs are still missing. The message says WETTERVORHERSAGE, and the next word break should be an X, but it shows an I. That letter is lit up below: click it, type X, press Suggest a plug, and apply the first suggestion.",
       enter:()=>{mark.p=plugCount();},wait:()=>plugCount()>mark.p,doIt:()=>{chk.plugs=applyPair(chk.plugs,"I","X");renderCheck();}},
-    {tab:"check",target:"#dec",title:"15 · Finish it off",body:"One more: the word after FUER should be RAUM (room, area). If it shows RAJM, fix the J to U the same way. Then run Find the ring setting again and Use the top row. With a fuller plugboard the right ring stands out, and every letter reads.",
+    {tab:"check",target:"#dec",click:decCell("J","U"),press:"Fix the lit J to U, then Find the ring setting again",title:"15 · Finish it off",body:"One more: the word after FUER should be RAUM (room, area). The lit J should be a U: fix it the same way. Then run Find the ring setting again and Use the top row. With a fuller plugboard the right ring stands out, and every letter reads.",
       wait:solved,doIt:()=>{chk.plugs=applyPair(chk.plugs,"J","U");renderCheck();$("#cRingFind").click();setTimeout(()=>{$(".rf button")?.click();},50);}},
-    {tab:"check",target:"#indBtn",title:"16 · The whole daily key",body:"Message broken! Now for the real prize. The header gave the Grundstellung and the encrypted message key, so click Search the indicator to work out the remaining ring settings. The result is the complete key for every message on this network today.",
+    {tab:"check",target:"#indBtn",click:"#indBtn",title:"16 · The whole daily key",body:"Message broken! Now for the real prize. The header gave the Grundstellung and the encrypted message key, so click Search the indicator to work out the remaining ring settings. The result is the complete key for every message on this network today.",
       wait:()=>!!$("#indOut .note.good"),doIt:()=>$("#indBtn").click()},
     {tab:"check",title:"You broke Enigma",body:"That's the job Hut 6 did every day of the war: crib, menu, Bombe, checking machine, daily key. Try the Daily situation report next (its crib is too long, so you'll need to trim the menu), or the genuine 1941 Barbarossa message. The Flat panel buttons switch to 2D views if you prefer them."}
   ];
-  let i=-1,timer=null,raf=null;
+  let i=-1,timer=null,raf=null,hotEl=null,doneNow=false,userPos=null,grab=null;
   const box=h("div",{class:"tour-card",role:"dialog","aria-live":"polite","aria-label":"Guided tour"});
   const ring=h("div",{class:"tour-ring"});
+  const resolve=sel=>sel?(typeof sel==="function"?sel():vis(sel)):null;
+  /* the control this step wants pressed: lit, and kept lit if the page redraws it */
+  function paintHot(el){
+    if(hotEl&&hotEl!==el)hotEl.classList.remove("tour-hot","ok");
+    hotEl=el||null;
+    if(hotEl){hotEl.classList.add("tour-hot");hotEl.classList.toggle("ok",doneNow);}
+  }
+  function union(a,b){const l=Math.min(a.left,b.left),t=Math.min(a.top,b.top),r=Math.max(a.right,b.right),d=Math.max(a.bottom,b.bottom);
+    return {left:l,top:t,right:r,bottom:d,width:r-l,height:d-t};}
+  /* the card sits where the reader drags it, clamped to the window */
+  function applyPos(){
+    if(!userPos)return false;
+    const w=box.offsetWidth||360,hh=box.offsetHeight||200;
+    box.style.left=Math.min(Math.max(8,userPos.left),Math.max(8,innerWidth-w-8))+"px";
+    box.style.top=Math.min(Math.max(8,userPos.top),Math.max(8,innerHeight-hh-8))+"px";
+    box.style.right="auto";box.style.bottom="auto";
+    return true;
+  }
+  box.addEventListener("pointerdown",e=>{
+    const head=e.target.closest(".tour-head");
+    if(!head||e.target.closest("button"))return;
+    const r=box.getBoundingClientRect();
+    grab={dx:e.clientX-r.left,dy:e.clientY-r.top};
+    try{box.setPointerCapture(e.pointerId);}catch(err){}
+    box.classList.add("dragging");e.preventDefault();
+  });
+  box.addEventListener("pointermove",e=>{
+    if(!grab)return;
+    userPos={left:e.clientX-grab.dx,top:e.clientY-grab.dy};
+    box.classList.add("moved");box.classList.remove("dock");applyPos();
+  });
+  const drop=()=>{if(grab){grab=null;box.classList.remove("dragging");show(i);}};
+  box.addEventListener("pointerup",drop);box.addEventListener("pointercancel",drop);
+  addEventListener("resize",()=>applyPos());
+
   function place(){
     const s=S[i];if(!s){return;}
-    const t=s.target?(typeof s.target==="function"?s.target():vis(s.target)):null;
-    if(t){const r=t.getBoundingClientRect();ring.hidden=false;Object.assign(ring.style,{left:(r.left-6)+"px",top:(r.top-6)+"px",width:(r.width+12)+"px",height:(r.height+12)+"px"});
-      const narrow=window.innerWidth<700;box.classList.toggle("dock",narrow);
-      if(!narrow){const bw=Math.min(380,window.innerWidth-32);let top=r.bottom+14,left=Math.min(Math.max(16,r.left),window.innerWidth-bw-16);
-        if(top+220>window.innerHeight)top=Math.max(16,r.top-14-box.offsetHeight);if(top<16)top=16;box.style.left=left+"px";box.style.top=top+"px";}
-    } else {ring.hidden=true;box.classList.remove("dock");box.style.left=Math.max(16,(window.innerWidth-Math.min(420,window.innerWidth-32))/2)+"px";box.style.top=Math.max(80,window.innerHeight*.28)+"px";}
+    const tEl=resolve(s.target),cEl=resolve(s.click);
+    paintHot(cEl);
+    const r=tEl&&cEl&&tEl!==cEl?union(tEl.getBoundingClientRect(),cEl.getBoundingClientRect())
+           :(tEl||cEl)?(tEl||cEl).getBoundingClientRect():null;
+    if(r){ring.hidden=false;Object.assign(ring.style,{left:(r.left-6)+"px",top:(r.top-6)+"px",width:(r.width+12)+"px",height:(r.height+12)+"px"});
+      const narrow=window.innerWidth<700;
+      if(!userPos)box.classList.toggle("dock",narrow);
+      if(!userPos&&!narrow){const bw=Math.min(380,window.innerWidth-32),bh=box.offsetHeight||220;
+        /* sit next to the control being pressed, not the whole ringed area */
+        const a=cEl?cEl.getBoundingClientRect():r;
+        let top=a.bottom+14,left=Math.min(Math.max(16,a.left),window.innerWidth-bw-16);
+        if(top+bh>window.innerHeight-16)top=a.top-14-bh;               /* no room below: go above */
+        if(top<16)top=Math.max(16,window.innerHeight-bh-16);           /* no room either side: clamp */
+        box.style.left=left+"px";box.style.top=top+"px";}
+    } else if(!userPos){ring.hidden=true;box.classList.remove("dock");
+      box.style.left=Math.max(16,(window.innerWidth-Math.min(420,window.innerWidth-32))/2)+"px";
+      box.style.top=Math.max(80,window.innerHeight*.28)+"px";
+    } else {ring.hidden=true;}
+    applyPos();
     raf=requestAnimationFrame(place);
   }
+  /* the page itself doesn't scroll; this scrolls the window the control lives in */
+  function bring(el){el.scrollIntoView({block:"center",inline:"nearest",behavior:smooth()});}
   function show(n){
     clearInterval(timer);i=n;const s=S[i];if(!s)return end();
+    doneNow=false;paintHot(null);
     try{localStorage.setItem("hut6-tour","seen");}catch(e){}
-    if(s.tab&&$("#tab-"+s.tab).hidden)showTab(s.tab);
+    if(ROOM)ROOM.highlight(s.lit||null);
+    if(s.tab){
+      if(mark.win&&mark.win!==s.tab)setOpen(mark.win,false);
+      if(s.tab==="enigma"||s.tab==="bombe")showMachine(s.tab);
+      openPanel(s.tab);mark.win=s.tab;
+    }
     s.enter&&s.enter();
     box.innerHTML="";
     const done=h("span",{class:"tour-done",text:"✓ Done"});done.hidden=true;
-    const next=h("button",{class:"primary",text:i===S.length-1?"Finish":s.wait?"Next":"Next",onclick:()=>show(i+1)});
+    const next=h("button",{class:"primary",text:i===S.length-1?"Finish":"Next",onclick:()=>show(i+1)});
     if(s.wait)next.disabled=true;
+    const cEl=resolve(s.click);
+    const label=s.press||(cEl?(cEl.textContent||"").trim().replace(/\s+/g," ").slice(0,60):null);
     box.append(
-      h("div",{class:"tour-head"},h("span",{class:"eyebrow",text:`Tour · ${i+1} of ${S.length}`}),h("button",{class:"tour-x",text:"✕","aria-label":"Close tour",onclick:end})),
+      h("div",{class:"tour-head"},
+        h("span",{class:"tour-grip",text:"⠿","aria-hidden":"true"}),
+        h("span",{class:"eyebrow",text:`Tour · ${i+1} of ${S.length}`}),
+        userPos?h("button",{class:"tour-x",title:"Put the card back",text:"⤾","aria-label":"Put the card back",
+          onclick:()=>{userPos=null;box.classList.remove("moved");show(i);}}):null,
+        h("button",{class:"tour-x",text:"✕","aria-label":"Close tour",onclick:end})),
       h("h3",{text:s.title}),h("p",{text:s.body}),
+      label?h("div",{class:"tour-press"},h("span",{text:"▸"}),h("b",{text:label})):null,
       h("div",{class:"row tour-btns"},i>0?h("button",{text:"Back",onclick:()=>show(i-1)}):null,s.doIt?h("button",{text:"Do it for me",onclick:()=>{s.doIt();}}):null,done,next));
-    const t=s.target?(typeof s.target==="function"?s.target():vis(s.target)):null;
-    if(t)t.scrollIntoView({block:"center",behavior:"smooth"});
-    if(s.wait)timer=setInterval(()=>{let ok=false;try{ok=s.wait();}catch(e){}if(ok){clearInterval(timer);done.hidden=false;next.disabled=false;next.focus();}},250);
     if(!box.isConnected){document.body.append(ring,box);}
     cancelAnimationFrame(raf);place();
+    const prim=resolve(s.target)||cEl;
+    if(prim){bring(prim);place();}
+    if(s.wait)timer=setInterval(()=>{let ok=false;try{ok=s.wait();}catch(e){}if(ok){clearInterval(timer);doneNow=true;if(hotEl)hotEl.classList.add("ok");done.hidden=false;next.disabled=false;next.focus();}},250);
   }
-  function end(){clearInterval(timer);cancelAnimationFrame(raf);ring.remove();box.remove();if(i>=S.length-1)i=-1;}
+  function end(){clearInterval(timer);cancelAnimationFrame(raf);paintHot(null);
+    if(ROOM)ROOM.highlight(null);
+    ring.remove();box.remove();if(i>=S.length-1)i=-1;}
   function start(){show(i>=0&&i<S.length?i:0);}
   function restart(){show(0);}
   return {start,restart,seen:()=>{try{return !!localStorage.getItem("hut6-tour");}catch(e){return false;}}};
@@ -1581,21 +1950,32 @@ if(!tour.seen()){const b=$("#tourBanner");b.hidden=false;$("#tourGo").addEventLi
 
 /* ---------- boot ---------- */
 function init3D(){
-  if(!window.Sim3D)return;
-  try{
-    E3=Sim3D.Enigma3D($("#e3d"),{press:L=>keyDown(L),release:()=>keyUp(),turn:(i,d)=>{em.pos[i]=mod(em.pos[i]+d);updWindows();},socket:L=>socketClick(L)});
-    B3=Sim3D.Bombe3D($("#b3d"));
-  }catch(err){console.warn("3D unavailable",err);E3=B3=null;return;}
-  $("#eBar").hidden=$("#bBar").hidden=false;$("#e3d").hidden=$("#b3d").hidden=false;$("#eFlat").hidden=true;$("#bombeFace").hidden=true;
-  $$("[data-ev]").forEach(b=>b.addEventListener("click",()=>{const d=b.dataset.ev==="3d";$$("[data-ev]").forEach(x=>x.setAttribute("aria-pressed",x===b));$("#e3d").hidden=!d;$("#eFlat").hidden=d;$("#eCams").style.visibility=d?"visible":"hidden";if(d)E3.resize();else requestAnimationFrame(drawCables);}));
-  $$("[data-cam]").forEach(b=>b.addEventListener("click",()=>E3.view(b.dataset.cam)));
-  let coverOn=true;$("#eCover").addEventListener("click",e=>{coverOn=!coverOn;E3.setCover(coverOn);e.target.textContent=coverOn?"Lift rotor cover":"Close rotor cover";if(!coverOn)E3.view("rotors");});
-  $$("[data-bv]").forEach(b=>b.addEventListener("click",()=>{const d=b.dataset.bv==="3d";$$("[data-bv]").forEach(x=>x.setAttribute("aria-pressed",x===b));$("#b3d").hidden=!d;$("#bombeFace").hidden=d;if(d)B3.resize();}));
-  $$("[data-bcam]").forEach(b=>b.addEventListener("click",()=>B3.view(b.dataset.bcam)));
+  if(window.Sim3D){
+    try{
+      ROOM=Sim3D.Room($("#room"),{press:L=>keyDown(L),release:()=>keyUp(),
+        turn:(i,d)=>{em.pos[i]=mod(em.pos[i]+d);updWindows();},socket:L=>socketClick(L)});
+    }catch(err){console.warn("3D unavailable",err);ROOM=null;}
+  }
+  if(!ROOM){                                   /* no WebGL: the flat panels stand in */
+    $("#flat").hidden=false;$("#roomHint").hidden=true;$("#bombeFace").hidden=true;
+    $$("[data-cam],[data-bcam],#eCover").forEach(b=>b.disabled=true);
+    return;
+  }
+  E3=ROOM.enigma;B3=ROOM.bombe;
+  $$("[data-cam]").forEach(b=>b.addEventListener("click",()=>ROOM.view(b.dataset.cam)));
+  $$("[data-bcam]").forEach(b=>b.addEventListener("click",()=>ROOM.view(b.dataset.bcam)));
+  let coverOn=true;
+  $("#eCover").addEventListener("click",e=>{coverOn=!coverOn;E3.setCover(coverOn);
+    e.target.textContent=coverOn?"Lift rotor cover":"Close rotor cover";if(!coverOn)ROOM.view("rotors");});
 }
+/* windows start life in document order; send each to the side it docks on */
+$$(".win").forEach(w=>$(w.dataset.side==="left"?"#dockLeft":"#dockRight").append(w));
 init3D();
 buildBoards();rebuildMachine(false);renderForms();buildFace();buildRegister();orderPick();$("#bOneOrder").style.visibility="hidden";
 selectMessage("wetter");loadBombe();renderStops();quick();renderCheck();
-{const hsh=location.hash.slice(1);if(["enigma","intercepts","menu","bombe","check"].includes(hsh))showTab(hsh);if(hsh==="tour"){$("#tourBanner").hidden=true;tour.restart();}}
+showMachine("enigma",0);openPanel("enigma");
+{const hsh=location.hash.slice(1);
+ if(PANELS.includes(hsh))goTo(hsh);
+ if(hsh==="tour"){$("#tourBanner").hidden=true;tour.restart();}}
 })();
 </script>
